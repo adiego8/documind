@@ -35,9 +35,34 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Initialize services with error handling
 document_processor = DocumentProcessor()
-vector_store = VectorStore()
-rag_service = RAGService()
+
+# Initialize vector store and RAG service only if OpenAI key is available
+vector_store = None
+rag_service = None
+
+try:
+    if settings.openai_api_key:
+        vector_store = VectorStore()
+        rag_service = RAGService()
+    else:
+        print("⚠️  OpenAI API key not provided - vector store and RAG features disabled")
+except Exception as e:
+    print(f"⚠️  Failed to initialize vector store: {e}")
+    print("Vector store and RAG features disabled")
+
+def check_vector_store():
+    """Check if vector store is available"""
+    if not vector_store:
+        raise HTTPException(status_code=503, detail="Vector store not available - OpenAI API key required")
+    return vector_store
+
+def check_rag_service():
+    """Check if RAG service is available"""
+    if not rag_service:
+        raise HTTPException(status_code=503, detail="RAG service not available - OpenAI API key required")
+    return rag_service
 
 # Test database connection on startup
 @app.on_event("startup")
