@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+chromadb
+langchain
+langchain-openai
+python-multipart
+pydantic
+python-dotenv
+PyPDF2
+python-docx
+tiktoken
+setuptools
+python-jose[cryptography]
+passlib[bcrypt]
+psycopg2-binary

@@ -1,0 +1,122 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: rag-postgres
+    environment:
+      POSTGRES_DB: ragdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ragdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - rag-network
+
+  # ChromaDB Vector Database
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: rag-chromadb
+    ports:
+      - "8001:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - PERSIST_DIRECTORY=/chroma/chroma
+      - ANONYMIZED_TELEMETRY=FALSE
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - rag-network
+
+  # FastAPI Backend
+  backend:
+    build: .
+    container_name: rag-backend
+    ports:
+      - "8000:8000"
+    environment:
+      # Database Configuration
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=ragdb
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      
+      # ChromaDB Configuration
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+      
+      # OpenAI Configuration
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - LLM_MODEL=gpt-3.5-turbo
+      - EMBEDDING_MODEL=text-embedding-3-small
+      
+      # Application Configuration
+      - DEBUG=true
+      - FRONTEND_URL=http://localhost:3000
+      
+      # Security
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+    depends_on:
+      postgres:
+        condition: service_healthy
+      chromadb:
+        condition: service_healthy
+    volumes:
+      - ./app:/app/app:ro  # Mount source for development
+    networks:
+      - rag-network
+
+  # React Frontend
+  frontend:
+    build: ./frontend
+    container_name: rag-frontend
+    ports:
+      - "3000:80"
+    environment:
+      - REACT_APP_API_BASE_URL=http://localhost:8000
+      - REACT_APP_NAME=DOCUMIND
+      - REACT_APP_DEBUG=true
+    depends_on:
+      - backend
+    networks:
+      - rag-network
+
+  # Database Admin (optional)
+  adminer:
+    image: adminer:latest
+    container_name: rag-adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    networks:
+      - rag-network
+
+volumes:
+  postgres_data:
+    name: rag_postgres_data
+  chroma_data:
+    name: rag_chroma_data
+
+networks:
+  rag-network:
+    name: rag-network
+    driver: bridge
