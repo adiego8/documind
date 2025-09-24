@@ -91,16 +91,28 @@ clean: ## Clean build artifacts and caches
 	find . -type d -name "__pycache__" -delete
 	find . -type f -name "*.pyc" -delete
 
-start-db: ## Start PostgreSQL database with Docker Compose
+start-db: ## Start PostgreSQL database and ChromaDB with Docker Compose
 	@echo "🐘 Starting PostgreSQL database..."
+	@echo "🧠 Starting ChromaDB vector database..."
 	docker-compose up -d postgres
+	docker run -d \
+	  --name chromadb \
+	  -p 8001:8000 \
+	  -v chromadb_data:/chroma/chroma \
+	  -e CHROMA_SERVER_HOST=0.0.0.0 \
+	  chromadb/chroma:0.4.24 || echo "ChromaDB container already running"
 	@echo "✅ PostgreSQL is starting up..."
-	@echo "📊 Database will be available at localhost:5432"
+	@echo "✅ ChromaDB is starting up..."
+	@echo "📊 PostgreSQL available at localhost:5432"
+	@echo "🧠 ChromaDB available at localhost:8001"
 	@echo "🌐 Adminer (DB admin) will be available at http://localhost:8080"
 
-stop-db: ## Stop PostgreSQL database
+stop-db: ## Stop PostgreSQL database and ChromaDB
 	@echo "🛑 Stopping PostgreSQL database..."
+	@echo "🛑 Stopping ChromaDB..."
 	docker-compose down
+	docker stop chromadb 2>/dev/null || echo "ChromaDB not running"
+	docker rm chromadb 2>/dev/null || echo "ChromaDB container not found"
 
 start-adminer: ## Start Adminer (database admin interface)
 	@echo "🌐 Starting Adminer database admin interface..."

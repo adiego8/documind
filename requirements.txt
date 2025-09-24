@@ -1,6 +1,7 @@
 fastapi
 uvicorn[standard]
-chromadb
+chromadb==0.4.24
+numpy<2.0
 langchain
 langchain-openai
 python-multipart
