@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Depends
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
-from datetime import timedelta
+from datetime import timedelta, datetime
 from typing import List, Optional
 import os
 import tempfile
@@ -75,7 +75,19 @@ async def startup_event():
 @app.get("/health")
 async def health_check():
     """Health check endpoint for Railway"""
-    return {"status": "healthy", "service": "RAG API"}
+    try:
+        # Test database connection if available
+        from app.database import test_connection
+        db_status = "connected" if test_connection() else "disconnected"
+    except Exception:
+        db_status = "unknown"
+    
+    return {
+        "status": "healthy",
+        "service": "DOCUMIND API", 
+        "database": db_status,
+        "timestamp": datetime.now().isoformat()
+    }
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
