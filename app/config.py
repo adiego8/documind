@@ -28,11 +28,15 @@ class Settings:
         if database_url:
             # Parse Railway's DATABASE_URL
             parsed = urlparse(database_url)
-            self.db_host = parsed.hostname
+            self.db_host = parsed.hostname or "localhost"
             self.db_port = str(parsed.port or 5432)
-            self.db_name = parsed.path[1:]  # Remove leading '/'
-            self.db_user = parsed.username
-            self.db_password = parsed.password
+            self.db_name = parsed.path[1:] if parsed.path else "ragdb"  # Remove leading '/'
+            self.db_user = parsed.username or "postgres"
+            self.db_password = parsed.password or "postgres"
+            
+            # Debug logging for production
+            if os.getenv("DEBUG", "false").lower() != "true":
+                print(f"📊 Database: {self.db_name} on {self.db_host}:{self.db_port}")
         else:
             # Use individual environment variables (local development)
             self.db_host = os.getenv("DB_HOST", "localhost")
