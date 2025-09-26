@@ -27,7 +27,7 @@ install-frontend-deps: ## Install React frontend dependencies
 
 create-venv: ## Create Python virtual environment
 	@echo "🐍 Creating Python virtual environment..."
-	python -m venv .venv
+	python3 -m venv .venv
 	@echo "✅ Virtual environment created. Activate with: source .venv/bin/activate"
 
 run: ## Start both backend and frontend (requires 2 terminals)
@@ -44,11 +44,12 @@ run: ## Start both backend and frontend (requires 2 terminals)
 	@echo "Or use 'make dev' to see the individual commands"
 
 run-backend: ## Start DOCUMIND API backend server
-	@echo "🔧 Starting DOCUMIND API backend on http://localhost:8000..."
-	source .venv/bin/activate && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+	@echo "🔧 Starting DOCUMIND API backend on http://localhost:8080..."
+	source .venv/bin/activate && python3 -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
 
 run-frontend: ## Start DOCUMIND React frontend development server
 	@echo "⚛️  Starting DOCUMIND React frontend on http://localhost:3000..."
+	cp config/frontend/.env frontend/.env
 	cd frontend && npm start
 
 dev: ## Show development commands
@@ -64,8 +65,8 @@ dev: ## Show development commands
 	@echo ""
 	@echo "Access:"
 	@echo "  Frontend: http://localhost:3000"
-	@echo "  Backend:  http://localhost:8000"
-	@echo "  API Docs: http://localhost:8000/docs"
+	@echo "  Backend:  http://localhost:8080"
+	@echo "  API Docs: http://localhost:8080/docs"
 
 build: ## Build frontend for production
 	@echo "🏗️  Building frontend for production..."
@@ -73,7 +74,7 @@ build: ## Build frontend for production
 
 test-backend: ## Run backend tests
 	@echo "🧪 Running backend tests..."
-	source .venv/bin/activate && python -m pytest
+	source .venv/bin/activate && python3 -m pytest
 
 test-frontend: ## Run frontend tests
 	@echo "🧪 Running frontend tests..."
@@ -81,7 +82,7 @@ test-frontend: ## Run frontend tests
 
 lint: ## Run linting for both backend and frontend
 	@echo "🔍 Running linters..."
-	source .venv/bin/activate && python -m flake8 app/
+	source .venv/bin/activate && python3 -m flake8 app/
 	cd frontend && npm run lint
 
 clean: ## Clean build artifacts and caches
@@ -114,12 +115,6 @@ stop-db: ## Stop PostgreSQL database and ChromaDB
 	docker stop chromadb 2>/dev/null || echo "ChromaDB not running"
 	docker rm chromadb 2>/dev/null || echo "ChromaDB container not found"
 
-start-adminer: ## Start Adminer (database admin interface)
-	@echo "🌐 Starting Adminer database admin interface..."
-	docker-compose up -d adminer
-	@echo "✅ Adminer available at http://localhost:8080"
-	@echo "📋 Login with: Server=postgres, Username=postgres, Password=postgres, Database=ragdb"
-
 db-logs: ## Show database logs
 	@echo "📋 PostgreSQL logs:"
 	docker-compose logs -f postgres
@@ -142,7 +137,7 @@ check-env: ## Check if environment is properly configured
 	@test -f .env && echo "✅ .env file exists" || echo "❌ .env file missing (copy from .env.example)"
 	@test -d .venv && echo "✅ Virtual environment exists" || echo "❌ Virtual environment missing (run: make create-venv)"
 	@test -d frontend/node_modules && echo "✅ Frontend dependencies installed" || echo "❌ Frontend dependencies missing (run: make install-frontend-deps)"
-	@source .venv/bin/activate && python -c "import app.main" 2>/dev/null && echo "✅ Backend dependencies installed" || echo "❌ Backend dependencies missing (run: make install-backend-deps)"
+	@source .venv/bin/activate && python3 -c "import app.main" 2>/dev/null && echo "✅ Backend dependencies installed" || echo "❌ Backend dependencies missing (run: make install-backend-deps)"
 
 logs: ## Show application logs (if running with systemd or docker)
 	@echo "📋 For logs, check your terminal where you ran 'make run-backend' and 'make run-frontend'"

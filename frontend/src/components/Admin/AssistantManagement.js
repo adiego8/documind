@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -15,7 +15,6 @@ import {
   IconButton,
   Chip,
   Alert,
-  Fab,
   FormControl,
   InputLabel,
   Select,
@@ -48,6 +47,8 @@ import {
 } from '../../store/slices/assistantsSlice';
 import axios from 'axios';
 import config from '../../config/config';
+import CustomDialog from '../common/CustomDialog';
+import useCustomDialog from '../../hooks/useCustomDialog';
 
 const API_BASE_URL = config.apiBaseUrl;
 
@@ -55,6 +56,7 @@ const AssistantManagement = () => {
   const dispatch = useDispatch();
   const { assistants, isLoading, error, documentStats, documents, isUploading, isDeletingDocument } = useSelector((state) => state.assistants);
   const { token } = useSelector((state) => state.auth);
+  const { dialogState, showConfirm, closeDialog, handleConfirm } = useCustomDialog();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAssistant, setEditingAssistant] = useState(null);
@@ -72,14 +74,7 @@ const AssistantManagement = () => {
     llm_preset: 'custom'
   });
 
-  useEffect(() => {
-    dispatch(getAssistants());
-    if (token) {
-      loadLlmConfigurations();
-    }
-  }, [dispatch, token]);
-
-  const loadLlmConfigurations = async () => {
+  const loadLlmConfigurations = useCallback(async () => {
     try {
       const response = await axios.get(
         `${API_BASE_URL}/llm/configurations`,
@@ -95,7 +90,14 @@ const AssistantManagement = () => {
     } catch (error) {
       console.error('Failed to load LLM configurations:', error);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    dispatch(getAssistants());
+    if (token) {
+      loadLlmConfigurations();
+    }
+  }, [dispatch, token, loadLlmConfigurations]);
 
   useEffect(() => {
     // Load document stats for all assistants
@@ -203,7 +205,12 @@ const AssistantManagement = () => {
   };
 
   const handleDelete = async (assistantId) => {
-    if (window.confirm('Are you sure you want to delete this assistant?')) {
+    const confirmed = await showConfirm(
+      'Are you sure you want to delete this assistant? This action cannot be undone.',
+      'Delete Assistant'
+    );
+    
+    if (confirmed) {
       try {
         await dispatch(deleteAssistant(assistantId)).unwrap();
       } catch (error) {
@@ -238,7 +245,12 @@ const AssistantManagement = () => {
   };
 
   const handleClearDocuments = async (assistantId) => {
-    if (window.confirm('Are you sure you want to clear all documents for this assistant?')) {
+    const confirmed = await showConfirm(
+      'Are you sure you want to clear all documents for this assistant? This action cannot be undone.',
+      'Clear All Documents'
+    );
+    
+    if (confirmed) {
       try {
         await dispatch(clearAssistantDocuments(assistantId)).unwrap();
         dispatch(getAssistantDocumentStats(assistantId));
@@ -269,7 +281,12 @@ const AssistantManagement = () => {
   };
 
   const handleDeleteDocument = async (assistantId, documentId, filename) => {
-    if (window.confirm(`Are you sure you want to delete "${filename}"?`)) {
+    const confirmed = await showConfirm(
+      `Are you sure you want to delete "${filename}"? This action cannot be undone.`,
+      'Delete Document'
+    );
+    
+    if (confirmed) {
       try {
         await dispatch(deleteAssistantDocument({ assistantId, documentId })).unwrap();
         dispatch(getAssistantDocumentStats(assistantId));
@@ -296,8 +313,32 @@ const AssistantManagement = () => {
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => handleOpenDialog()}
+          sx={{
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            borderRadius: 3,
+            px: 3,
+            py: 1.5,
+            fontSize: { xs: '0.875rem', sm: '1rem' },
+            fontWeight: 600,
+            boxShadow: '0 6px 20px rgba(102, 126, 234, 0.4)',
+            textTransform: 'none',
+            '&:hover': {
+              background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
+              boxShadow: '0 8px 25px rgba(102, 126, 234, 0.6)',
+              transform: 'translateY(-2px) scale(1.02)'
+            },
+            '&:active': {
+              transform: 'translateY(-1px) scale(0.98)'
+            },
+            transition: 'all 0.2s ease-in-out'
+          }}
         >
-          Create Assistant
+          <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+            Create Assistant
+          </Box>
+          <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
+            Create
+          </Box>
         </Button>
       </Box>
 
@@ -314,7 +355,20 @@ const AssistantManagement = () => {
       <Grid container spacing={3}>
         {assistants.map((assistant) => (
           <Grid size={{ xs: 12, md: 6, lg: 4 }} key={assistant.id}>
-            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <Card sx={{ 
+              height: '100%', 
+              display: 'flex', 
+              flexDirection: 'column',
+              borderRadius: 3,
+              background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+              border: '1px solid rgba(102, 126, 234, 0.1)',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+              transition: 'all 0.3s ease-in-out',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: '0 8px 25px rgba(102, 126, 234, 0.15)'
+              }
+            }}>
               <CardContent sx={{ flex: 1 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                   <BotIcon sx={{ mr: 1, color: 'primary.main' }} />
@@ -337,17 +391,32 @@ const AssistantManagement = () => {
                   <Chip 
                     label={`Temp: ${assistant.temperature}`} 
                     size="small" 
-                    variant="outlined" 
+                    sx={{
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      color: 'white',
+                      border: 'none',
+                      fontWeight: 500
+                    }}
                   />
                   <Chip 
                     label={`Tokens: ${assistant.max_tokens}`} 
                     size="small" 
-                    variant="outlined" 
+                    sx={{
+                      background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                      color: 'white',
+                      border: 'none',
+                      fontWeight: 500
+                    }}
                   />
                   <Chip 
                     label={assistant.document_collection} 
                     size="small" 
-                    variant="outlined" 
+                    sx={{
+                      background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                      color: 'white',
+                      border: 'none',
+                      fontWeight: 500
+                    }}
                   />
                 </Box>
 
@@ -403,7 +472,18 @@ const AssistantManagement = () => {
                         size="small"
                         startIcon={<UploadIcon />}
                         variant="outlined"
-                        sx={{ fontSize: '0.75rem' }}
+                        sx={{ 
+                          fontSize: '0.75rem',
+                          borderRadius: 2,
+                          color: '#667eea',
+                          border: '1px solid rgba(102, 126, 234, 0.3)',
+                          '&:hover': {
+                            background: 'rgba(102, 126, 234, 0.08)',
+                            border: '1px solid rgba(102, 126, 234, 0.5)',
+                            transform: 'translateY(-1px)'
+                          },
+                          transition: 'all 0.2s ease-in-out'
+                        }}
                       >
                         Select Files
                       </Button>
@@ -415,7 +495,21 @@ const AssistantManagement = () => {
                         variant="contained"
                         onClick={() => handleUploadDocuments(assistant.id)}
                         disabled={isUploading}
-                        sx={{ fontSize: '0.75rem' }}
+                        sx={{ 
+                          fontSize: '0.75rem',
+                          background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                          borderRadius: 2,
+                          boxShadow: '0 2px 8px rgba(79, 172, 254, 0.3)',
+                          '&:hover': {
+                            background: 'linear-gradient(135deg, #3d8bfe 0%, #00d4fe 100%)',
+                            boxShadow: '0 4px 12px rgba(79, 172, 254, 0.4)',
+                            transform: 'translateY(-1px)'
+                          },
+                          '&:disabled': {
+                            background: 'rgba(0, 0, 0, 0.12)'
+                          },
+                          transition: 'all 0.2s ease-in-out'
+                        }}
                       >
                         Upload
                       </Button>
@@ -426,9 +520,19 @@ const AssistantManagement = () => {
                         size="small"
                         startIcon={<ClearIcon />}
                         onClick={() => handleClearDocuments(assistant.id)}
-                        color="error"
                         variant="outlined"
-                        sx={{ fontSize: '0.75rem' }}
+                        sx={{ 
+                          fontSize: '0.75rem',
+                          borderRadius: 2,
+                          color: '#f5576c',
+                          border: '1px solid rgba(245, 87, 108, 0.3)',
+                          '&:hover': {
+                            background: 'rgba(245, 87, 108, 0.08)',
+                            border: '1px solid rgba(245, 87, 108, 0.5)',
+                            transform: 'translateY(-1px)'
+                          },
+                          transition: 'all 0.2s ease-in-out'
+                        }}
                       >
                         Clear
                       </Button>
@@ -491,20 +595,40 @@ const AssistantManagement = () => {
                 </Box>
               </CardContent>
 
-              <CardActions>
+              <CardActions sx={{ p: 2, gap: 1, justifyContent: 'flex-end' }}>
                 <IconButton 
                   size="small" 
                   onClick={() => handleOpenDialog(assistant)}
-                  color="primary"
+                  sx={{
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    color: 'white',
+                    borderRadius: 2,
+                    p: 1,
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
+                      transform: 'translateY(-1px) scale(1.05)'
+                    },
+                    transition: 'all 0.2s ease-in-out'
+                  }}
                 >
-                  <EditIcon />
+                  <EditIcon fontSize="small" />
                 </IconButton>
                 <IconButton 
                   size="small" 
                   onClick={() => handleDelete(assistant.id)}
-                  color="error"
+                  sx={{
+                    background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                    color: 'white',
+                    borderRadius: 2,
+                    p: 1,
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #e078f0 0%, #e73c5e 100%)',
+                      transform: 'translateY(-1px) scale(1.05)'
+                    },
+                    transition: 'all 0.2s ease-in-out'
+                  }}
                 >
-                  <DeleteIcon />
+                  <DeleteIcon fontSize="small" />
                 </IconButton>
               </CardActions>
             </Card>
@@ -525,8 +649,33 @@ const AssistantManagement = () => {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => handleOpenDialog()}
+            size="large"
+            sx={{
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              borderRadius: 3,
+              px: 4,
+              py: 2,
+              fontSize: { xs: '1rem', sm: '1.1rem' },
+              fontWeight: 600,
+              boxShadow: '0 8px 25px rgba(102, 126, 234, 0.4)',
+              textTransform: 'none',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
+                boxShadow: '0 10px 30px rgba(102, 126, 234, 0.6)',
+                transform: 'translateY(-3px) scale(1.05)'
+              },
+              '&:active': {
+                transform: 'translateY(-1px) scale(0.95)'
+              },
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}
           >
-            Create Assistant
+            <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+              Create Assistant
+            </Box>
+            <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
+              Create
+            </Box>
           </Button>
         </Box>
       )}
@@ -550,6 +699,29 @@ const AssistantManagement = () => {
               value={formData.name}
               onChange={handleInputChange('name')}
               required
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 3,
+                  background: 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(10px)',
+                  '& fieldset': {
+                    borderColor: 'rgba(102, 126, 234, 0.3)'
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'rgba(102, 126, 234, 0.5)'
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#667eea',
+                    boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)'
+                  }
+                },
+                '& .MuiInputLabel-root': {
+                  color: '#667eea',
+                  '&.Mui-focused': {
+                    color: '#667eea'
+                  }
+                }
+              }}
             />
             
             <TextField
@@ -559,6 +731,29 @@ const AssistantManagement = () => {
               onChange={handleInputChange('description')}
               multiline
               rows={2}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 3,
+                  background: 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(10px)',
+                  '& fieldset': {
+                    borderColor: 'rgba(102, 126, 234, 0.3)'
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'rgba(102, 126, 234, 0.5)'
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#667eea',
+                    boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)'
+                  }
+                },
+                '& .MuiInputLabel-root': {
+                  color: '#667eea',
+                  '&.Mui-focused': {
+                    color: '#667eea'
+                  }
+                }
+              }}
             />
             
             <TextField
@@ -570,14 +765,96 @@ const AssistantManagement = () => {
               rows={4}
               required
               helperText="Define the assistant's personality, expertise, and behavior"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 3,
+                  background: 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(10px)',
+                  '& fieldset': {
+                    borderColor: 'rgba(102, 126, 234, 0.3)'
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'rgba(102, 126, 234, 0.5)'
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#667eea',
+                    boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)'
+                  }
+                },
+                '& .MuiInputLabel-root': {
+                  color: '#667eea',
+                  '&.Mui-focused': {
+                    color: '#667eea'
+                  }
+                },
+                '& .MuiFormHelperText-root': {
+                  color: 'rgba(102, 126, 234, 0.7)'
+                }
+              }}
             />
 
-            <FormControl fullWidth>
+            <FormControl fullWidth sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 3,
+                background: 'rgba(255, 255, 255, 0.9)',
+                backdropFilter: 'blur(10px)',
+                '& fieldset': {
+                  borderColor: 'rgba(102, 126, 234, 0.3)'
+                },
+                '&:hover fieldset': {
+                  borderColor: 'rgba(102, 126, 234, 0.5)'
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#667eea',
+                  boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)'
+                }
+              },
+              '& .MuiInputLabel-root': {
+                color: '#667eea',
+                '&.Mui-focused': {
+                  color: '#667eea'
+                }
+              },
+              '& .MuiFormHelperText-root': {
+                color: 'rgba(102, 126, 234, 0.7)'
+              },
+              '& .MuiSelect-icon': {
+                color: '#667eea'
+              }
+            }}>
               <InputLabel>LLM Configuration Preset</InputLabel>
               <Select
                 value={formData.llm_preset}
                 label="LLM Configuration Preset"
                 onChange={handlePresetChange}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      borderRadius: 3,
+                      mt: 1,
+                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+                      border: '1px solid rgba(102, 126, 234, 0.1)',
+                      background: 'rgba(255, 255, 255, 0.95)',
+                      backdropFilter: 'blur(10px)',
+                      '& .MuiMenuItem-root': {
+                        borderRadius: 2,
+                        mx: 1,
+                        my: 0.5,
+                        transition: 'all 0.2s ease-in-out',
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
+                          transform: 'translateX(4px)'
+                        },
+                        '&.Mui-selected': {
+                          background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%)',
+                          '&:hover': {
+                            background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%)'
+                          }
+                        }
+                      }
+                    }
+                  }
+                }}
               >
                 <MenuItem value="custom">Custom</MenuItem>
                 {Object.entries(llmConfigurations).map(([key, config]) => (
@@ -602,7 +879,36 @@ const AssistantManagement = () => {
                 inputProps={{ min: 0, max: 2, step: 0.1 }}
                 helperText="0 = focused, 2 = creative"
                 disabled={formData.llm_preset !== 'custom'}
-                sx={{ flex: 1 }}
+                sx={{ 
+                  flex: 1,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 3,
+                    background: 'rgba(255, 255, 255, 0.9)',
+                    backdropFilter: 'blur(10px)',
+                    '& fieldset': {
+                      borderColor: 'rgba(102, 126, 234, 0.3)'
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'rgba(102, 126, 234, 0.5)'
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#667eea',
+                      boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)'
+                    },
+                    '&.Mui-disabled': {
+                      background: 'rgba(0, 0, 0, 0.02)'
+                    }
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: '#667eea',
+                    '&.Mui-focused': {
+                      color: '#667eea'
+                    }
+                  },
+                  '& .MuiFormHelperText-root': {
+                    color: 'rgba(102, 126, 234, 0.7)'
+                  }
+                }}
               />
               
               <TextField
@@ -613,7 +919,36 @@ const AssistantManagement = () => {
                 inputProps={{ min: 100, max: 4000, step: 100 }}
                 helperText="Response length limit"
                 disabled={formData.llm_preset !== 'custom'}
-                sx={{ flex: 1 }}
+                sx={{ 
+                  flex: 1,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 3,
+                    background: 'rgba(255, 255, 255, 0.9)',
+                    backdropFilter: 'blur(10px)',
+                    '& fieldset': {
+                      borderColor: 'rgba(102, 126, 234, 0.3)'
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'rgba(102, 126, 234, 0.5)'
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#667eea',
+                      boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)'
+                    },
+                    '&.Mui-disabled': {
+                      background: 'rgba(0, 0, 0, 0.02)'
+                    }
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: '#667eea',
+                    '&.Mui-focused': {
+                      color: '#667eea'
+                    }
+                  },
+                  '& .MuiFormHelperText-root': {
+                    color: 'rgba(102, 126, 234, 0.7)'
+                  }
+                }}
               />
             </Box>
 
@@ -623,20 +958,108 @@ const AssistantManagement = () => {
               value={formData.document_collection}
               onChange={handleInputChange('document_collection')}
               helperText="Which document collection this assistant should use"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 3,
+                  background: 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(10px)',
+                  '& fieldset': {
+                    borderColor: 'rgba(102, 126, 234, 0.3)'
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'rgba(102, 126, 234, 0.5)'
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#667eea',
+                    boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)'
+                  }
+                },
+                '& .MuiInputLabel-root': {
+                  color: '#667eea',
+                  backgroundColor: 'transparent',
+                  '&.Mui-focused': {
+                    color: '#667eea'
+                  },
+                  '&.MuiInputLabel-shrink': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    px: 1,
+                    borderRadius: 1
+                  }
+                },
+                '& .MuiFormHelperText-root': {
+                  color: 'rgba(102, 126, 234, 0.7)'
+                }
+              }}
             />
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
+        <DialogActions sx={{ 
+          p: 3, 
+          gap: 2
+        }}>
+          <Button 
+            onClick={handleCloseDialog}
+            sx={{
+              borderRadius: 2,
+              px: 3,
+              py: 1,
+              color: '#667eea',
+              border: '1px solid rgba(102, 126, 234, 0.3)',
+              '&:hover': {
+                background: 'rgba(102, 126, 234, 0.08)',
+                border: '1px solid rgba(102, 126, 234, 0.5)',
+                transform: 'translateY(-1px)'
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}
+          >
+            Cancel
+          </Button>
           <Button 
             onClick={handleSubmit}
             variant="contained"
             disabled={!formData.name.trim() || !formData.initial_context.trim()}
+            sx={{
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              borderRadius: 2,
+              px: 4,
+              py: 1.2,
+              fontSize: '1rem',
+              fontWeight: 600,
+              boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+              textTransform: 'none',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
+                boxShadow: '0 6px 20px rgba(102, 126, 234, 0.6)',
+                transform: 'translateY(-1px) scale(1.02)'
+              },
+              '&:disabled': {
+                background: 'rgba(0, 0, 0, 0.12)',
+                transform: 'none',
+                boxShadow: 'none'
+              },
+              '&:active': {
+                transform: 'translateY(0px) scale(0.98)'
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}
           >
             {editingAssistant ? 'Update' : 'Create'}
           </Button>
         </DialogActions>
       </Dialog>
+      
+      <CustomDialog
+        open={dialogState.open}
+        onClose={closeDialog}
+        title={dialogState.title}
+        message={dialogState.message}
+        type={dialogState.type}
+        onConfirm={handleConfirm}
+        confirmText={dialogState.confirmText}
+        cancelText={dialogState.cancelText}
+        showCancel={dialogState.showCancel}
+      />
     </Box>
   );
 };

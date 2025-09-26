@@ -3,7 +3,16 @@ import json
 from dotenv import load_dotenv
 from urllib.parse import urlparse
 
-load_dotenv()
+# Load environment variables from specified path or default
+env_file_path = os.getenv("ENV_FILE_PATH", ".env")
+load_dotenv(dotenv_path=env_file_path)
+
+# Debug: Print which env file was loaded (only in debug mode)
+if os.getenv("DEBUG", "false").lower() == "true":
+    print(f"🔧 Loaded environment from: {env_file_path}")
+    print(f"🔧 OPENAI_API_KEY present: {'yes' if os.getenv('OPENAI_API_KEY') else 'no'}")
+    print(f"🔧 DATABASE_URL present: {'yes' if os.getenv('DATABASE_URL') else 'no'}")
+    print(f"🔧 ALLOWED_ORIGINS: {os.getenv('ALLOWED_ORIGINS', 'not set')}")
 
 class Settings:
     def __init__(self):
@@ -14,7 +23,7 @@ class Settings:
         
         # Server Configuration
         self.host = os.getenv("HOST", "0.0.0.0")
-        self.port = int(os.getenv("PORT", "8000"))
+        self.port = int(os.getenv("PORT", "8080"))
         self.debug = os.getenv("DEBUG", "true").lower() == "true"
         self.reload = os.getenv("RELOAD", "true").lower() == "true"
         
@@ -33,6 +42,7 @@ class Settings:
             self.db_name = parsed.path[1:] if parsed.path else "ragdb"  # Remove leading '/'
             self.db_user = parsed.username or "postgres"
             self.db_password = parsed.password or "postgres"
+            self.db_requires_ssl = "sslmode=require" in database_url or "channel_binding=require" in database_url
             
             # Debug logging for production
             if os.getenv("DEBUG", "false").lower() != "true":
@@ -44,6 +54,7 @@ class Settings:
             self.db_name = os.getenv("DB_NAME", "ragdb")
             self.db_user = os.getenv("DB_USER", "postgres")
             self.db_password = os.getenv("DB_PASSWORD", "postgres")
+            self.db_requires_ssl = os.getenv("DB_REQUIRES_SSL", "false").lower() == "true"
         
         # OpenAI Configuration
         self.openai_api_key = os.getenv("OPENAI_API_KEY", "")
@@ -54,8 +65,11 @@ class Settings:
         
         # Vector Store Configuration
         self.chroma_persist_directory = os.getenv("CHROMA_PERSIST_DIRECTORY", "./chroma_db")
-        self.chroma_host = os.getenv("CHROMA_HOST", None)  # For Docker setup
+        self.chroma_host = os.getenv("CHROMA_HOST", None)  # For Docker or Trychroma Cloud
         self.chroma_port = int(os.getenv("CHROMA_PORT", "8000"))
+        self.chroma_api_key = os.getenv("CHROMA_API_KEY", None)  # For Trychroma Cloud
+        self.chroma_tenant = os.getenv("CHROMA_TENANT", "default_tenant")  # For Trychroma Cloud
+        self.chroma_database = os.getenv("CHROMA_DATABASE", "default_database")  # For Trychroma Cloud
         
         # Document Processing
         self.chunk_size = int(os.getenv("CHUNK_SIZE", "1000"))

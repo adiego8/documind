@@ -93,9 +93,9 @@ npm start
 ## 🌐 Access Points
 
 - **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8000  
-- **API Documentation**: http://localhost:8000/docs
-- **Database Admin (Adminer)**: http://localhost:8080
+- **Backend API**: http://localhost:8080  
+- **API Documentation**: http://localhost:8080/docs
+- **Database Admin (Adminer)**: http://localhost:8081
 
 ## 🔑 Default Credentials
 
@@ -225,6 +225,77 @@ TEMPERATURE=0.7
 - **PDF**: Extracted using PyPDF2
 - **DOCX**: Extracted using python-docx
 - **TXT**: Plain text files
+
+## 🎨 UI Design & Branding
+
+### Typography & Fonts
+
+The application uses custom Google Fonts for premium branding:
+
+- **Primary Brand Font**: [Orbitron](https://fonts.google.com/specimen/Orbitron) - A futuristic, tech-focused monospace font used for the DOCUMIND logo and main branding
+- **Supporting Font**: [Space Grotesk](https://fonts.google.com/specimen/Space+Grotesk) - A clean, modern sans-serif font for supporting text and descriptions
+
+### DOCUMIND Logo Styling
+
+#### Login Form
+```css
+fontFamily: 'Orbitron, monospace'
+fontSize: { xs: '1.5rem', sm: '1.8rem' }
+fontWeight: 700
+background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+WebkitBackgroundClip: 'text'
+WebkitTextFillColor: 'transparent'
+letterSpacing: '0.1em'
+textShadow: '0 2px 4px rgba(102, 126, 234, 0.3)'
+```
+
+#### Header Navigation
+```css
+fontFamily: 'Orbitron, monospace'
+fontSize: { xs: '1rem', sm: '1.4rem' }
+fontWeight: 700
+background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%)'
+WebkitBackgroundClip: 'text'
+WebkitTextFillColor: 'transparent'
+letterSpacing: '0.08em'
+filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))'
+```
+
+### Design System
+
+- **Primary Gradient**: `linear-gradient(135deg, #667eea 0%, #764ba2 100%)` - Used throughout the app for buttons, branding, and accents
+- **Glass Morphism**: Subtle backdrop filters and transparent backgrounds for modern UI elements
+- **Shadow Effects**: Consistent drop shadows and text shadows for depth and readability
+- **Responsive Typography**: Font sizes and spacing adapt to different screen sizes
+
+The branding creates a premium, tech-forward appearance that emphasizes AI and document intelligence capabilities.
+
+### Custom Dialog System
+
+The application uses a custom dialog system instead of browser alerts/confirms for better user experience:
+
+- **CustomDialog Component**: Reusable dialog with consistent styling and animations
+- **useCustomDialog Hook**: Easy-to-use hook for showing alerts, confirmations, and notifications
+- **Dialog Types**: `info`, `warning`, `error`, `success`, `confirm` with appropriate icons and colors
+- **Modern Styling**: Glass morphism effects, gradients, and smooth animations
+- **Responsive Design**: Adapts to different screen sizes
+
+```javascript
+// Usage example
+const { showAlert, showConfirm, showError } = useCustomDialog();
+
+// Show alert
+await showAlert('Operation completed successfully', 'Success');
+
+// Show confirmation
+const confirmed = await showConfirm('Delete this item?', 'Confirm Delete');
+if (confirmed) {
+  // User confirmed
+}
+
+// Show error
+await showError('Something went wrong', 'Error');
+```
 
 ## Privacy & Local Operation
 

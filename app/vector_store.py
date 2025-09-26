@@ -6,14 +6,23 @@ from app.config import settings
 
 class VectorStore:
     def __init__(self, collection_name: str = "documents"):
-        # Use HTTP client if CHROMA_HOST is set (Docker setup), otherwise use PersistentClient
-        if settings.chroma_host:
+        # Check for Trychroma Cloud configuration first
+        if settings.chroma_api_key:
+            # Trychroma Cloud setup
+            self.client = chromadb.CloudClient(
+                tenant=settings.chroma_tenant,
+                database=settings.chroma_database,
+                api_key=settings.chroma_api_key
+            )
+        elif settings.chroma_host:
+            # Local Docker HTTP client setup
             self.client = chromadb.HttpClient(
                 host=settings.chroma_host,
                 port=settings.chroma_port,
                 settings=Settings(anonymized_telemetry=False)
             )
         else:
+            # Local file-based storage
             self.client = chromadb.PersistentClient(
                 path=settings.chroma_persist_directory,
                 settings=Settings(anonymized_telemetry=False)

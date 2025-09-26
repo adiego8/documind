@@ -2,7 +2,7 @@
 -- This script runs automatically when the PostgreSQL container starts for the first time
 
 -- Connect to the ragdb database
-\c ragdb;
+-- \c ragdb;
 
 -- Enable UUID extension for generating UUIDs
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

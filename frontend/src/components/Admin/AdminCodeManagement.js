@@ -62,7 +62,16 @@ const AdminCodeManagement = () => {
         </Alert>
       )}
 
-      <TableContainer component={Paper}>
+      <TableContainer 
+        component={Paper}
+        elevation={8}
+        sx={{
+          borderRadius: 3,
+          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+          border: '1px solid rgba(102, 126, 234, 0.1)',
+          overflow: 'hidden'
+        }}
+      >
         <Table>
           <TableHead>
             <TableRow>
@@ -88,6 +97,17 @@ const AdminCodeManagement = () => {
                       size="small" 
                       onClick={() => handleCopyCode(code.code)}
                       title="Copy admin code"
+                      sx={{
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        color: 'white',
+                        borderRadius: 1.5,
+                        p: 0.5,
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
+                          transform: 'scale(1.1)'
+                        },
+                        transition: 'all 0.2s ease-in-out'
+                      }}
                     >
                       <CopyIcon fontSize="small" />
                     </IconButton>
@@ -110,6 +130,17 @@ const AdminCodeManagement = () => {
                         size="small" 
                         onClick={() => handleCopyCode(code.user_code)}
                         title="Copy user code"
+                        sx={{
+                          background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                          color: 'white',
+                          borderRadius: 1.5,
+                          p: 0.5,
+                          '&:hover': {
+                            background: 'linear-gradient(135deg, #3d8bfe 0%, #00d4fe 100%)',
+                            transform: 'scale(1.1)'
+                          },
+                          transition: 'all 0.2s ease-in-out'
+                        }}
                       >
                         <CopyIcon fontSize="small" />
                       </IconButton>
@@ -139,13 +170,34 @@ const AdminCodeManagement = () => {
                 <TableCell>
                   <Chip 
                     label={code.is_active ? 'Active' : 'Inactive'} 
-                    color={code.is_active ? 'success' : 'default'}
                     size="small"
+                    sx={{
+                      background: code.is_active 
+                        ? 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+                        : 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                      color: 'white',
+                      fontWeight: 500,
+                      border: 'none'
+                    }}
                   />
                 </TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', gap: 1 }}>
-                    <IconButton size="small" title="View users">
+                    <IconButton 
+                      size="small" 
+                      title="View users"
+                      sx={{
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        color: 'white',
+                        borderRadius: 1.5,
+                        p: 0.8,
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
+                          transform: 'scale(1.1)'
+                        },
+                        transition: 'all 0.2s ease-in-out'
+                      }}
+                    >
                       <ViewIcon fontSize="small" />
                     </IconButton>
                   </Box>

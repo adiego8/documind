@@ -8,7 +8,6 @@ import {
   CircularProgress,
   Alert,
   Divider,
-  Chip,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -38,7 +37,6 @@ const MultiAssistantChat = () => {
     error 
   } = useSelector((state) => state.assistants);
   
-  const { user } = useSelector((state) => state.auth);
 
   const [message, setMessage] = useState('');
   const messagesEndRef = useRef(null);
@@ -92,7 +90,14 @@ const MultiAssistantChat = () => {
   const currentAssistant = assistants.find(a => a.id === currentAssistantId);
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', p: 2 }}>
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      height: { xs: 'calc(100vh - 56px)', sm: '100%' },
+      p: { xs: 1, sm: 2 },
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      minHeight: '100vh'
+    }}>
       {/* Assistant Selector */}
       <AssistantSelector />
 
@@ -108,13 +113,17 @@ const MultiAssistantChat = () => {
 
       {/* Chat Messages */}
       <Paper 
+        elevation={8}
         sx={{ 
           flex: 1, 
-          p: 2, 
+          p: { xs: 1, sm: 2 }, 
           mb: 2, 
-          maxHeight: '60vh', 
+          maxHeight: { xs: '50vh', sm: '60vh' }, 
           overflow: 'auto',
-          backgroundColor: '#f5f5f5'
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(10px)',
+          borderRadius: 3,
+          border: '1px solid rgba(255, 255, 255, 0.2)'
         }}
       >
         {currentHistory.length === 0 ? (
@@ -135,11 +144,24 @@ const MultiAssistantChat = () => {
                 {/* User Message */}
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
                   <Box sx={{ 
-                    maxWidth: '70%', 
-                    backgroundColor: '#1976d2', 
+                    maxWidth: { xs: '85%', sm: '70%' }, 
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                     color: 'white',
-                    p: 2, 
-                    borderRadius: '18px 18px 4px 18px'
+                    p: { xs: 1.5, sm: 2 }, 
+                    borderRadius: '20px 20px 6px 20px',
+                    boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+                    position: 'relative',
+                    animation: 'slideInRight 0.3s ease-out',
+                    '@keyframes slideInRight': {
+                      '0%': {
+                        opacity: 0,
+                        transform: 'translateX(20px)'
+                      },
+                      '100%': {
+                        opacity: 1,
+                        transform: 'translateX(0)'
+                      }
+                    }
                   }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                       <PersonIcon sx={{ mr: 1, fontSize: 16 }} />
@@ -154,11 +176,24 @@ const MultiAssistantChat = () => {
                 {/* Assistant Response */}
                 <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
                   <Box sx={{ 
-                    maxWidth: '70%', 
-                    backgroundColor: 'white',
-                    p: 2, 
-                    borderRadius: '18px 18px 18px 4px',
-                    boxShadow: 1
+                    maxWidth: { xs: '85%', sm: '70%' }, 
+                    background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                    p: { xs: 1.5, sm: 2 }, 
+                    borderRadius: '20px 20px 20px 6px',
+                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+                    border: '1px solid rgba(102, 126, 234, 0.1)',
+                    position: 'relative',
+                    animation: 'slideInLeft 0.3s ease-out',
+                    '@keyframes slideInLeft': {
+                      '0%': {
+                        opacity: 0,
+                        transform: 'translateX(-20px)'
+                      },
+                      '100%': {
+                        opacity: 1,
+                        transform: 'translateX(0)'
+                      }
+                    }
                   }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                       <BotIcon sx={{ mr: 1, fontSize: 16, color: '#1976d2' }} />
@@ -209,13 +244,23 @@ const MultiAssistantChat = () => {
         {isQuerying && (
           <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2 }}>
             <Box sx={{ 
-              maxWidth: '70%', 
-              backgroundColor: 'white',
-              p: 2, 
-              borderRadius: '18px 18px 18px 4px',
-              boxShadow: 1,
+              maxWidth: { xs: '85%', sm: '70%' }, 
+              background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+              p: { xs: 1.5, sm: 2 }, 
+              borderRadius: '20px 20px 20px 6px',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+              border: '1px solid rgba(102, 126, 234, 0.1)',
               display: 'flex',
-              alignItems: 'center'
+              alignItems: 'center',
+              animation: 'pulse 1.5s ease-in-out infinite',
+              '@keyframes pulse': {
+                '0%, 100%': {
+                  opacity: 0.8
+                },
+                '50%': {
+                  opacity: 1
+                }
+              }
             }}>
               <CircularProgress size={16} sx={{ mr: 1 }} />
               <Typography variant="body2" color="text.secondary">
@@ -229,7 +274,21 @@ const MultiAssistantChat = () => {
       </Paper>
 
       {/* Message Input */}
-      <Box sx={{ display: 'flex', gap: 1 }}>
+      <Paper
+        elevation={8}
+        sx={{
+          p: { xs: 1, sm: 1.5 },
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(10px)',
+          borderRadius: 3,
+          border: '1px solid rgba(255, 255, 255, 0.2)'
+        }}
+      >
+        <Box sx={{ 
+          display: 'flex', 
+          gap: { xs: 0.5, sm: 1 },
+          flexDirection: { xs: 'row' }
+        }}>
         <TextField
           fullWidth
           multiline
@@ -240,16 +299,46 @@ const MultiAssistantChat = () => {
           placeholder={currentAssistant ? `Ask ${currentAssistant.name} a question...` : 'Select an assistant first...'}
           disabled={!currentAssistantId || isQuerying}
           variant="outlined"
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              fontSize: { xs: '0.875rem', sm: '1rem' },
+              borderRadius: 2,
+              background: 'rgba(255, 255, 255, 0.8)',
+              '&:hover': {
+                background: 'rgba(255, 255, 255, 0.9)'
+              },
+              '&.Mui-focused': {
+                background: 'rgba(255, 255, 255, 1)',
+                boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)'
+              }
+            }
+          }}
         />
-        <Button
-          variant="contained"
-          onClick={handleSendMessage}
-          disabled={!message.trim() || !currentAssistantId || isQuerying}
-          sx={{ minWidth: 56 }}
-        >
+          <Button
+            variant="contained"
+            onClick={handleSendMessage}
+            disabled={!message.trim() || !currentAssistantId || isQuerying}
+            sx={{ 
+              minWidth: { xs: 48, sm: 56 },
+              px: { xs: 1, sm: 2 },
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              borderRadius: 2,
+              boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
+                boxShadow: '0 6px 20px rgba(102, 126, 234, 0.6)',
+                transform: 'translateY(-1px)'
+              },
+              '&:disabled': {
+                background: 'rgba(0, 0, 0, 0.12)'
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}
+          >
           {isQuerying ? <CircularProgress size={24} /> : <SendIcon />}
-        </Button>
-      </Box>
+          </Button>
+        </Box>
+      </Paper>
     </Box>
   );
 };

@@ -29,7 +29,7 @@ app = FastAPI(
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for development
+    allow_origins=settings.allowed_origins,  # Use configured origins from settings
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -89,55 +89,9 @@ async def health_check():
         "timestamp": datetime.now().isoformat()
     }
 
-@app.get("/", response_class=HTMLResponse)
+@app.get("/")
 async def read_root():
-    return f"""
-    <html>
-        <head>
-            <title>{settings.app_name} API</title>
-            <style>
-                body {{ font-family: Arial, sans-serif; margin: 40px; }}
-                .container {{ max-width: 800px; margin: 0 auto; }}
-                .form-group {{ margin: 20px 0; }}
-                textarea, input {{ width: 100%; padding: 10px; }}
-                button {{ background: #007bff; color: white; padding: 10px 20px; border: none; cursor: pointer; }}
-                .response {{ background: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 5px; }}
-                .sources {{ margin-top: 10px; font-size: 0.9em; color: #666; }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <h1>{settings.app_name} API</h1>
-                
-                <h2>Upload Documents</h2>
-                <form action="/upload" method="post" enctype="multipart/form-data">
-                    <div class="form-group">
-                        <input type="file" name="files" multiple accept=".pdf,.docx,.txt">
-                    </div>
-                    <button type="submit">Upload Documents</button>
-                </form>
-                
-                <h2>Ask a Question</h2>
-                <form action="/query" method="post">
-                    <div class="form-group">
-                        <textarea name="question" placeholder="Enter your question here..." rows="4"></textarea>
-                    </div>
-                    <button type="submit">Ask Question</button>
-                </form>
-                
-                <div id="stats">
-                    <p>Documents in database: <span id="doc-count">Loading...</span></p>
-                </div>
-            </div>
-            
-            <script>
-                fetch('/stats').then(r => r.json()).then(data => {{
-                    document.getElementById('doc-count').textContent = data.document_count;
-                }});
-            </script>
-        </body>
-    </html>
-    """
+    return {"message": f"Welcome to {settings.app_name} API", "docs": "/docs", "health": "/health"}
 
 @app.post("/upload")
 async def upload_documents(files: List[UploadFile] = File(...), current_user: dict = Depends(get_current_admin_user)):
@@ -887,6 +841,7 @@ async def delete_user(user_id: str, current_user: dict = Depends(get_current_adm
 
 if __name__ == "__main__":
     import uvicorn
+    
     uvicorn.run(
         app,
         host=settings.host,

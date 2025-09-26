@@ -159,15 +159,29 @@ const UserManagement = () => {
                   <TableCell>
                     <Chip 
                       label={user.role}
-                      color={user.role === 'admin' ? 'primary' : 'default'}
                       size="small"
+                      sx={{
+                        background: user.role === 'admin' 
+                          ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                          : 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                        color: 'white',
+                        fontWeight: 500,
+                        border: 'none'
+                      }}
                     />
                   </TableCell>
                   <TableCell>
                     <Chip 
                       label={user.is_active ? 'Active' : 'Inactive'}
-                      color={user.is_active ? 'success' : 'error'}
                       size="small"
+                      sx={{
+                        background: user.is_active 
+                          ? 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+                          : 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                        color: 'white',
+                        fontWeight: 500,
+                        border: 'none'
+                      }}
                     />
                   </TableCell>
                   <TableCell>
@@ -177,9 +191,19 @@ const UserManagement = () => {
                     {user.role !== 'admin' && (
                       <Tooltip title="Delete user and all associated data">
                         <IconButton
-                          color="error"
                           onClick={() => handleDeleteClick(user)}
                           size="small"
+                          sx={{
+                            background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                            color: 'white',
+                            borderRadius: 2,
+                            p: 1,
+                            '&:hover': {
+                              background: 'linear-gradient(135deg, #e078f0 0%, #e73c5e 100%)',
+                              transform: 'translateY(-1px) scale(1.05)'
+                            },
+                            transition: 'all 0.2s ease-in-out'
+                          }}
                         >
                           <DeleteIcon />
                         </IconButton>
@@ -223,16 +247,59 @@ const UserManagement = () => {
             This action cannot be undone.
           </Typography>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleDeleteCancel} disabled={deleting}>
+        <DialogActions sx={{ p: 3, gap: 2 }}>
+          <Button 
+            onClick={handleDeleteCancel} 
+            disabled={deleting}
+            sx={{
+              borderRadius: 2,
+              px: 3,
+              py: 1,
+              color: '#667eea',
+              border: '1px solid rgba(102, 126, 234, 0.3)',
+              '&:hover': {
+                background: 'rgba(102, 126, 234, 0.08)',
+                border: '1px solid rgba(102, 126, 234, 0.5)',
+                transform: 'translateY(-1px)'
+              },
+              '&:disabled': {
+                color: 'rgba(0, 0, 0, 0.26)',
+                border: '1px solid rgba(0, 0, 0, 0.12)'
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}
+          >
             Cancel
           </Button>
           <Button 
             onClick={handleDeleteConfirm}
-            color="error"
             variant="contained"
             disabled={deleting}
             startIcon={deleting ? <CircularProgress size={16} /> : <DeleteIcon />}
+            sx={{
+              background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+              borderRadius: 2,
+              px: 4,
+              py: 1.2,
+              fontSize: '1rem',
+              fontWeight: 600,
+              boxShadow: '0 4px 15px rgba(245, 87, 108, 0.4)',
+              textTransform: 'none',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #e078f0 0%, #e73c5e 100%)',
+                boxShadow: '0 6px 20px rgba(245, 87, 108, 0.6)',
+                transform: 'translateY(-1px) scale(1.02)'
+              },
+              '&:disabled': {
+                background: 'rgba(0, 0, 0, 0.12)',
+                transform: 'none',
+                boxShadow: 'none'
+              },
+              '&:active': {
+                transform: 'translateY(0px) scale(0.98)'
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}
           >
             {deleting ? 'Deleting...' : 'Delete User'}
           </Button>

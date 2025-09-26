@@ -40,7 +40,7 @@ A comprehensive RAG (Retrieval-Augmented Generation) system with a modern React 
    pip install -r requirements.txt
    
    # Start the backend server
-   python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+   python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
    ```
 
 3. **Frontend Setup**:
@@ -53,8 +53,8 @@ A comprehensive RAG (Retrieval-Augmented Generation) system with a modern React 
 
 4. **Access the Application**:
    - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8000
-   - API Documentation: http://localhost:8000/docs
+   - Backend API: http://localhost:8080
+   - API Documentation: http://localhost:8080/docs
 
 ### Default Credentials
 - **Admin**: username: `admin`, password: `admin123`

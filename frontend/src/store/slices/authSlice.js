@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
-import { clearAllData } from './assistantsSlice';
 import config from '../../config/config';
+import { tokenUtils } from '../../utils/tokenUtils';
 
 const API_BASE_URL = config.apiBaseUrl;
 
@@ -28,8 +28,8 @@ export const login = createAsyncThunk(
         username,
         password,
       });
-      localStorage.setItem('token', response.data.access_token);
-      localStorage.setItem('userRole', response.data.role);
+      tokenUtils.setToken(response.data.access_token);
+      tokenUtils.setRole(response.data.role);
       return response.data;
     } catch (error) {
       return rejectWithValue(formatError(error) || 'Login failed');
@@ -90,8 +90,7 @@ export const validateAdminCode = createAsyncThunk(
 );
 
 export const logout = createAsyncThunk('auth/logout', async () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('userRole');
+  tokenUtils.clearAuth();
   return {};
 });
 
@@ -99,11 +98,11 @@ const authSlice = createSlice({
   name: 'auth',
   initialState: {
     user: null,
-    token: localStorage.getItem('token'),
-    role: localStorage.getItem('userRole'),
+    token: tokenUtils.getToken(),
+    role: tokenUtils.getRole(),
     isLoading: false,
     error: null,
-    isAuthenticated: !!localStorage.getItem('token'),
+    isAuthenticated: tokenUtils.hasToken(),
     adminCodeValidation: null,
     isValidatingCode: false,
   },

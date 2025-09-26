@@ -6,7 +6,6 @@ import {
   CardContent,
   TextField,
   Button,
-  Typography,
   Alert,
   CircularProgress,
   Tab,
@@ -17,6 +16,8 @@ import {
   MenuItem,
 } from '@mui/material';
 import { login, register, clearError, validateUserCode, validateAdminCode, clearAdminCodeValidation } from '../../store/slices/authSlice';
+import CustomDialog from '../common/CustomDialog';
+import useCustomDialog from '../../hooks/useCustomDialog';
 
 function TabPanel({ children, value, index, ...other }) {
   return (
@@ -39,6 +40,7 @@ function TabPanel({ children, value, index, ...other }) {
 const LoginForm = () => {
   const dispatch = useDispatch();
   const { isLoading, error, adminCodeValidation, isValidatingCode } = useSelector((state) => state.auth);
+  const { dialogState, showError, closeDialog, handleConfirm } = useCustomDialog();
   
   const [tabValue, setTabValue] = useState(0);
   const [loginData, setLoginData] = useState({
@@ -90,10 +92,10 @@ const LoginForm = () => {
     dispatch(login(loginData));
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     if (registerData.password !== registerData.confirmPassword) {
-      alert('Passwords do not match');
+      await showError('Passwords do not match', 'Registration Error');
       return;
     }
     
@@ -102,13 +104,13 @@ const LoginForm = () => {
     const codeType = registerData.role === 'admin' ? 'admin code' : 'user code';
     
     if (!requiredCode.trim()) {
-      alert(`${codeType} is required to register`);
+      await showError(`${codeType} is required to register`, 'Missing Information');
       return;
     }
     
     // Validate that the code is valid before allowing registration
     if (!adminCodeValidation?.valid) {
-      alert(`Please enter a valid ${codeType}`);
+      await showError(`Please enter a valid ${codeType}`, 'Invalid Code');
       return;
     }
     
@@ -128,7 +130,7 @@ const LoginForm = () => {
         justifyContent: 'center',
         alignItems: 'center',
         minHeight: '100vh',
-        backgroundColor: '#f5f5f5',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         px: { xs: 2, sm: 3 },
         py: { xs: 2, sm: 4 },
       }}
@@ -137,18 +139,63 @@ const LoginForm = () => {
         maxWidth: 400, 
         width: '100%', 
         mx: { xs: 1, sm: 2 },
-        boxShadow: { xs: 2, sm: 4 }
+        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
+        borderRadius: 4,
+        background: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(255, 255, 255, 0.2)'
       }}>
         <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-          <Box sx={{ display: 'flex', justifyContent: 'center', mb: { xs: 2, sm: 3 } }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: { xs: 2, sm: 3 } }}>
             <img 
               src="/logo.png" 
               alt="DOCUMIND Logo" 
               style={{ 
-                height: '120px', 
-                width: 'auto'
+                height: '60px', 
+                width: 'auto',
+                maxWidth: '100%',
+                marginBottom: '8px',
+                borderRadius: '12px',
+                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.2)'
               }} 
             />
+            <Box sx={{ 
+              fontFamily: 'Orbitron, monospace',
+              fontSize: { xs: '1.5rem', sm: '1.8rem' },
+              fontWeight: 700,
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              letterSpacing: '0.1em',
+              textAlign: 'center',
+              textShadow: '0 2px 4px rgba(102, 126, 234, 0.3)',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                filter: 'blur(10px)',
+                opacity: 0.1,
+                zIndex: -1
+              }
+            }}>
+              DOCUMIND
+            </Box>
+            <Box sx={{ 
+              fontFamily: 'Space Grotesk, sans-serif',
+              fontSize: '0.75rem',
+              fontWeight: 400,
+              color: 'rgba(102, 126, 234, 0.7)',
+              letterSpacing: '0.15em',
+              textTransform: 'uppercase',
+              mt: 0.5
+            }}>
+              AI Document Assistant
+            </Box>
           </Box>
           
           <Tabs value={tabValue} onChange={handleTabChange} centered>
@@ -187,7 +234,25 @@ const LoginForm = () => {
                 type="submit"
                 fullWidth
                 variant="contained"
-                sx={{ mt: 3, mb: 2 }}
+                sx={{ 
+                  mt: 3, 
+                  mb: 2,
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  borderRadius: 2,
+                  py: 1.5,
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
+                    boxShadow: '0 6px 20px rgba(102, 126, 234, 0.6)',
+                    transform: 'translateY(-1px)'
+                  },
+                  '&:disabled': {
+                    background: 'rgba(0, 0, 0, 0.12)'
+                  },
+                  transition: 'all 0.2s ease-in-out'
+                }}
                 disabled={isLoading}
               >
                 {isLoading ? <CircularProgress size={24} /> : 'Login'}
@@ -284,7 +349,25 @@ const LoginForm = () => {
                 type="submit"
                 fullWidth
                 variant="contained"
-                sx={{ mt: 3, mb: 2 }}
+                sx={{ 
+                  mt: 3, 
+                  mb: 2,
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  borderRadius: 2,
+                  py: 1.5,
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
+                    boxShadow: '0 6px 20px rgba(102, 126, 234, 0.6)',
+                    transform: 'translateY(-1px)'
+                  },
+                  '&:disabled': {
+                    background: 'rgba(0, 0, 0, 0.12)'
+                  },
+                  transition: 'all 0.2s ease-in-out'
+                }}
                 disabled={isLoading}
               >
                 {isLoading ? <CircularProgress size={24} /> : 'Register'}
@@ -293,6 +376,18 @@ const LoginForm = () => {
           </TabPanel>
         </CardContent>
       </Card>
+      
+      <CustomDialog
+        open={dialogState.open}
+        onClose={closeDialog}
+        title={dialogState.title}
+        message={dialogState.message}
+        type={dialogState.type}
+        onConfirm={handleConfirm}
+        confirmText={dialogState.confirmText}
+        cancelText={dialogState.cancelText}
+        showCancel={dialogState.showCancel}
+      />
     </Box>
   );
 };

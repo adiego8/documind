@@ -6,32 +6,19 @@ import {
   Typography,
   Tabs,
   Tab,
-  TextField,
   Button,
-  Card,
-  CardContent,
-  Grid,
   Alert,
-  LinearProgress,
-  Chip,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
 } from '@mui/material';
 import {
-  Upload as UploadIcon,
-  Delete as DeleteIcon,
-  Save as SaveIcon,
-  Description as FileIcon,
   Chat as ChatIcon,
-  SmartToy as BotIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import {
   getAssistantConfig,
-  updateAssistantConfig,
-  uploadDocuments,
   getDocumentStats,
   clearDocuments,
 } from '../../store/slices/assistantSlice';
@@ -61,11 +48,9 @@ function TabPanel({ children, value, index, ...other }) {
 const AdminDashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { config, stats, isLoading, isUploading, error } = useSelector((state) => state.assistant);
+  const { error } = useSelector((state) => state.assistant);
   
   const [tabValue, setTabValue] = useState(0);
-  const [configForm, setConfigForm] = useState(config);
-  const [selectedFiles, setSelectedFiles] = useState([]);
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -73,46 +58,14 @@ const AdminDashboard = () => {
     dispatch(getDocumentStats());
   }, [dispatch]);
 
-  useEffect(() => {
-    setConfigForm(config);
-  }, [config]);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
 
-  const handleConfigChange = (field) => (e) => {
-    const value = field === 'temperature' || field === 'max_tokens' 
-      ? parseFloat(e.target.value) 
-      : e.target.value;
-    
-    setConfigForm({
-      ...configForm,
-      [field]: value,
-    });
-  };
 
-  const handleSaveConfig = () => {
-    dispatch(updateAssistantConfig(configForm));
-  };
 
-  const handleFileSelect = (e) => {
-    setSelectedFiles(Array.from(e.target.files));
-  };
 
-  const handleUpload = () => {
-    if (selectedFiles.length === 0) return;
-
-    const formData = new FormData();
-    selectedFiles.forEach((file) => {
-      formData.append('files', file);
-    });
-
-    dispatch(uploadDocuments(formData)).then(() => {
-      setSelectedFiles([]);
-      dispatch(getDocumentStats());
-    });
-  };
 
   const handleClearDocuments = () => {
     dispatch(clearDocuments()).then(() => {
@@ -121,14 +74,25 @@ const AdminDashboard = () => {
     });
   };
 
-  const removeFile = (index) => {
-    setSelectedFiles(selectedFiles.filter((_, i) => i !== index));
-  };
 
   return (
-    <Box sx={{ width: '100%', p: { xs: 1, sm: 2 } }}>
+    <Box sx={{ 
+      width: '100%', 
+      p: { xs: 1, sm: 2 },
+      background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+      minHeight: '100vh'
+    }}>
       {/* Header */}
-      <Paper elevation={1} sx={{ p: { xs: 2, sm: 3 }, mb: 2 }}>
+      <Paper 
+        elevation={8} 
+        sx={{ 
+          p: { xs: 2, sm: 3 }, 
+          mb: 2,
+          borderRadius: 3,
+          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+          border: '1px solid rgba(255, 255, 255, 0.2)'
+        }}
+      >
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
@@ -144,11 +108,24 @@ const AdminDashboard = () => {
             Admin Dashboard
           </Typography>
           <Button
-            variant="outlined"
+            variant="contained"
             startIcon={<ChatIcon />}
             onClick={() => navigate('/chat')}
             size="medium"
-            sx={{ alignSelf: { xs: 'flex-start', sm: 'auto' } }}
+            sx={{ 
+              alignSelf: { xs: 'flex-start', sm: 'auto' },
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              borderRadius: 2,
+              px: 3,
+              py: 1,
+              boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
+                boxShadow: '0 6px 20px rgba(102, 126, 234, 0.6)',
+                transform: 'translateY(-1px)'
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}
           >
             Go to Chat
           </Button>
@@ -162,7 +139,15 @@ const AdminDashboard = () => {
       )}
 
       {/* Tabs */}
-      <Paper elevation={1}>
+      <Paper 
+        elevation={8}
+        sx={{
+          borderRadius: 3,
+          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          overflow: 'hidden'
+        }}
+      >
         <Tabs 
           value={tabValue} 
           onChange={handleTabChange}
@@ -173,7 +158,35 @@ const AdminDashboard = () => {
             '& .MuiTab-root': {
               fontSize: { xs: '0.875rem', sm: '0.875rem' },
               minWidth: { xs: 'auto', sm: 120 },
-              px: { xs: 1, sm: 2 }
+              px: { xs: 1, sm: 2 },
+              fontWeight: 600,
+              transition: 'all 0.2s ease-in-out',
+              '&:hover': {
+                background: 'rgba(102, 126, 234, 0.08)',
+                transform: 'translateY(-1px)'
+              },
+              '&.Mui-selected': {
+                background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
+                color: '#667eea'
+              }
+            },
+            '& .MuiTabs-indicator': {
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              height: 3,
+              borderRadius: '3px 3px 0 0'
+            },
+            '& .MuiTabs-scrollButtons': {
+              display: { xs: 'flex', md: 'none' },
+              '&.Mui-disabled': {
+                opacity: 0.3
+              }
+            },
+            '& .MuiTabScrollButton-root': {
+              width: 40,
+              color: '#667eea',
+              '&:hover': {
+                background: 'rgba(102, 126, 234, 0.08)'
+              }
             }
           }}
         >
@@ -181,7 +194,6 @@ const AdminDashboard = () => {
           <Tab label="Registration Codes" />
           <Tab label="Conversations" />
           <Tab label="Users" />
-          <Tab label="Statistics" />
         </Tabs>
 
         {/* Assistants Management Tab */}
@@ -204,39 +216,6 @@ const AdminDashboard = () => {
           <UserManagement />
         </TabPanel>
 
-        {/* Statistics Tab */}
-        <TabPanel value={tabValue} index={4}>
-          <Grid container spacing={3}>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Document Statistics
-                  </Typography>
-                  <Typography variant="h4" color="primary">
-                    {stats.document_count}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Total Documents
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Collection Info
-                  </Typography>
-                  <Typography variant="body1">
-                    Collection: {stats.collection_name || 'Default'}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-        </TabPanel>
 
       </Paper>
 
@@ -252,14 +231,47 @@ const AdminDashboard = () => {
             This action cannot be undone.
           </Typography>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setClearDialogOpen(false)}>
+        <DialogActions sx={{ p: 3, gap: 2 }}>
+          <Button 
+            onClick={() => setClearDialogOpen(false)}
+            sx={{
+              borderRadius: 2,
+              px: 3,
+              py: 1,
+              color: '#667eea',
+              border: '1px solid rgba(102, 126, 234, 0.3)',
+              '&:hover': {
+                background: 'rgba(102, 126, 234, 0.08)',
+                border: '1px solid rgba(102, 126, 234, 0.5)',
+                transform: 'translateY(-1px)'
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}
+          >
             Cancel
           </Button>
           <Button 
             onClick={handleClearDocuments}
-            color="error"
             variant="contained"
+            sx={{
+              background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+              borderRadius: 2,
+              px: 4,
+              py: 1.2,
+              fontSize: '1rem',
+              fontWeight: 600,
+              boxShadow: '0 4px 15px rgba(245, 87, 108, 0.4)',
+              textTransform: 'none',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #e078f0 0%, #e73c5e 100%)',
+                boxShadow: '0 6px 20px rgba(245, 87, 108, 0.6)',
+                transform: 'translateY(-1px) scale(1.02)'
+              },
+              '&:active': {
+                transform: 'translateY(0px) scale(0.98)'
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}
           >
             Clear All
           </Button>

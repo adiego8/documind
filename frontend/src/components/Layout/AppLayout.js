@@ -50,28 +50,59 @@ const AppLayout = ({ children }) => {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static">
+      <AppBar 
+        position="static" 
+        elevation={8}
+        sx={{
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          boxShadow: '0 4px 20px rgba(102, 126, 234, 0.4)'
+        }}
+      >
         <Toolbar sx={{ minHeight: { xs: 56, sm: 64 } }}>
           <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
             <img 
               src="/logo.png" 
               alt="DOCUMIND Logo" 
               style={{ 
-                height: '32px', 
+                height: '28px', 
                 width: 'auto', 
-                marginRight: '12px' 
+                marginRight: '12px',
+                borderRadius: '6px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
               }} 
             />
-            <Typography 
-              variant="h6"
-              component="div" 
-              sx={{ 
-                fontSize: { xs: '1.1rem', sm: '1.25rem' },
-                fontWeight: 600
-              }}
-            >
+            <Box sx={{ 
+              fontFamily: 'Orbitron, monospace',
+              fontSize: { xs: '1rem', sm: '1.4rem' },
+              fontWeight: 700,
+              color: 'white',
+              letterSpacing: '0.08em',
+              textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+              display: { xs: 'none', sm: 'block' },
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))'
+            }}>
               DOCUMIND
-            </Typography>
+            </Box>
+            <Box sx={{ 
+              fontFamily: 'Orbitron, monospace',
+              fontSize: '0.9rem',
+              fontWeight: 700,
+              color: 'white',
+              letterSpacing: '0.1em',
+              textShadow: '0 1px 4px rgba(0, 0, 0, 0.4)',
+              display: { xs: 'block', sm: 'none' },
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))'
+            }}>
+              DM
+            </Box>
           </Box>
           
           {role === 'admin' && (
@@ -83,7 +114,14 @@ const AppLayout = ({ children }) => {
               sx={{ 
                 mr: { xs: 0.5, sm: 1 },
                 fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                px: { xs: 1, sm: 2 }
+                px: { xs: 1, sm: 2 },
+                borderRadius: 2,
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  transform: 'translateY(-1px)',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+                }
               }}
             >
               <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
@@ -100,7 +138,14 @@ const AppLayout = ({ children }) => {
             sx={{ 
               mr: { xs: 0.5, sm: 1 },
               fontSize: { xs: '0.75rem', sm: '0.875rem' },
-              px: { xs: 1, sm: 2 }
+              px: { xs: 1, sm: 2 },
+              borderRadius: 2,
+              transition: 'all 0.2s ease-in-out',
+              '&:hover': {
+                background: 'rgba(255, 255, 255, 0.1)',
+                transform: 'translateY(-1px)',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+              }
             }}
           >
             <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
@@ -116,6 +161,14 @@ const AppLayout = ({ children }) => {
               aria-haspopup="true"
               onClick={handleMenu}
               color="inherit"
+              sx={{
+                borderRadius: 2,
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  transform: 'scale(1.05)'
+                }
+              }}
             >
               <AccountCircle />
             </IconButton>
