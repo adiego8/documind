@@ -25,10 +25,7 @@ import {
   Person as PersonIcon,
   AdminPanelSettings as AdminIcon,
 } from '@mui/icons-material';
-import axios from 'axios';
-import config from '../../config/config';
-
-const API_BASE_URL = config.apiBaseUrl;
+import apiClient from '../../utils/apiClient';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -42,10 +39,7 @@ const UserManagement = () => {
     setLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_BASE_URL}/admin/users`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await apiClient.get('/admin/users');
       setUsers(response.data.users);
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to fetch users');
@@ -68,10 +62,7 @@ const UserManagement = () => {
     
     setDeleting(true);
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`${API_BASE_URL}/admin/users/${userToDelete.id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await apiClient.delete(`/admin/users/${userToDelete.id}`);
       
       setUsers(users.filter(user => user.id !== userToDelete.id));
       setDeleteDialogOpen(false);
