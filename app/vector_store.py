@@ -88,11 +88,28 @@ class VectorStore:
         return formatted_results
     
     def delete_collection(self):
+        """Delete the entire collection"""
         try:
             self.client.delete_collection(name=self.collection_name)
-            self.collection = self._get_or_create_collection()
-        except:
-            pass
+            print(f"Successfully deleted collection: {self.collection_name}")
+            # Don't recreate the collection after deletion!
+            self.collection = None
+        except Exception as e:
+            print(f"Warning: Failed to delete collection {self.collection_name}: {e}")
+    
+    def delete_collection_if_empty(self):
+        """Delete the collection if it's empty"""
+        try:
+            if self.collection.count() == 0:
+                self.client.delete_collection(name=self.collection_name)
+                print(f"Successfully deleted empty collection: {self.collection_name}")
+                # Don't recreate the collection after deletion!
+                self.collection = None
+                return True
+            return False
+        except Exception as e:
+            print(f"Warning: Failed to check/delete empty collection {self.collection_name}: {e}")
+            return False
     
     def get_collection_count(self) -> int:
         return self.collection.count()

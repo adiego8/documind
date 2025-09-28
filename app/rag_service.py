@@ -122,3 +122,11 @@ Answer:"""
     def clear_all_documents(self):
         """Clear all documents from the vector store"""
         self.vector_store.delete_collection()
+    
+    def delete_collection_if_empty(self) -> bool:
+        """Delete the collection if it becomes empty after document deletion"""
+        return self.vector_store.delete_collection_if_empty()
+    
+    def delete_collection(self):
+        """Force delete the entire collection"""
+        self.vector_store.delete_collection()
