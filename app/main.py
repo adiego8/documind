@@ -1,21 +1,31 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 from app.config import settings
 from app.database import test_connection
 from app.document_processor import DocumentProcessor
 from app.vector_store import VectorStore
 from app.rag_service import RAGService
-from app.middleware import APIKeyAuthMiddleware
+from app.middleware import APIKeyAuthMiddleware, CSRFProtectionMiddleware
 
 # Import all routers
 from app.routers import auth, assistants, documents, queries, admin, llm_config, legacy, cms, api_keys, projects, public_api
+
+# Initialize rate limiter
+limiter = Limiter(key_func=get_remote_address)
 
 app = FastAPI(
     title=f"{settings.app_name} API",
     description=settings.app_description,
     version=settings.app_version
 )
+
+# Add rate limiter state and exception handler
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Add CORS middleware
 app.add_middleware(
@@ -28,6 +38,9 @@ app.add_middleware(
 
 # Add API Key authentication middleware
 app.add_middleware(APIKeyAuthMiddleware)
+
+# Add CSRF protection middleware
+app.add_middleware(CSRFProtectionMiddleware)
 
 # Initialize services with error handling
 document_processor = DocumentProcessor()

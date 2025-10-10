@@ -1,22 +1,32 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from datetime import timedelta
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from app.database import UserDB, AdminCodeDB
-from app.auth import authenticate_user, create_access_token, get_password_hash, ACCESS_TOKEN_EXPIRE_MINUTES
+from app.auth import authenticate_user, create_access_token, get_password_hash, validate_password_strength, ACCESS_TOKEN_EXPIRE_MINUTES
 from app.schemas import UserCreate, UserLogin, Token
 from typing import Optional
+
+# Initialize rate limiter
+limiter = Limiter(key_func=get_remote_address)
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
 @router.post("/register", response_model=dict)
+@limiter.limit("3/minute")  # Strict limit: 3 registrations per minute per IP
 async def register(
-    user_data: UserCreate, 
-    user_code: Optional[str] = None, 
+    request: Request,
+    user_data: UserCreate,
+    user_code: Optional[str] = None,
     admin_code: Optional[str] = None
 ):
     # Check if user already exists
     if UserDB.user_exists(user_data.username):
         raise HTTPException(status_code=400, detail="Username already registered")
-    
+
+    # Validate password strength (will raise HTTPException if weak)
+    validate_password_strength(user_data.password)
+
     # Determine registration flow based on role and provided codes
     if user_data.role == 'admin':
         # Admin registration requires admin_code
@@ -52,7 +62,8 @@ async def register(
         raise HTTPException(status_code=500, detail=f"Error creating user: {str(e)}")
 
 @router.post("/login", response_model=Token)
-async def login(user_credentials: UserLogin):
+@limiter.limit("5/minute")  # 5 login attempts per minute per IP
+async def login(request: Request, user_credentials: UserLogin):
     user = authenticate_user(user_credentials.username, user_credentials.password)
     if not user:
         raise HTTPException(

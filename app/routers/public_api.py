@@ -17,6 +17,12 @@ from app.models.projects import ProjectDB, SessionDB
 from app.database import AssistantDB, ConversationDB
 logger = logging.getLogger(__name__)
 
+def redact_token(token: str, visible_chars: int = 8) -> str:
+    """Redact sensitive tokens for safe logging"""
+    if not token or len(token) <= visible_chars:
+        return "***"
+    return f"{token[:visible_chars]}...{token[-4:]}" if len(token) > visible_chars + 4 else f"{token[:visible_chars]}***"
+
 router = APIRouter(prefix="/api/public", tags=["Public API"])
 
 def sanitize_message(message: str) -> str:
@@ -116,10 +122,10 @@ async def create_session(
     request: Request
 ):
     """Create a new public session (like EmailJS init)"""
-    print(f"🔑 Session creation request for project: {session_request.project_id}")
+    logger.info(f"Session creation request for project: {session_request.project_id}")
     try:
         start_time = time.time()
-        
+
         # Get project
         project = ProjectDB.get_project_by_id(session_request.project_id)
         if not project:
@@ -127,17 +133,17 @@ async def create_session(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Project not found or inactive"
             )
-        
+
         # Get client info
         client_info = get_client_info(request)
-        
+
         # Validate domain if restrictions are set
         if not validate_domain(project['allowed_domains'], client_info['origin']):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Domain not allowed for this project"
             )
-        
+
         # Create session
         session = SessionDB.create_session(
             project_id=session_request.project_id,
@@ -147,27 +153,27 @@ async def create_session(
             origin_domain=client_info['origin'],
             metadata=session_request.metadata
         )
-        
-        print(f"✅ Session created: {session['session_token'] if session else 'None'} (Full token for debugging)")
-        
+
         if not session:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to create session"
             )
-        
+
+        # Log with redacted token
+        logger.info(f"Session created successfully: {redact_token(session['session_token'])}")
+
         return SessionCreateResponse(
             session_token=session['session_token'],
             expires_at=session['expires_at'].isoformat(),
             project_id=session['project_id']
         )
-        
+
     except HTTPException as he:
-        print(f"🚨 Session creation HTTPException: {he.status_code} - {he.detail}")
+        logger.warning(f"Session creation failed: {he.status_code} - {he.detail}")
         raise
     except Exception as e:
-        print(f"💥 Session creation error for project {session_request.project_id}: {str(e)}")
-        logger.error(f"Session creation failed for project {session_request.project_id}: {str(e)}")
+        logger.error(f"Session creation error for project {session_request.project_id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to create session"
@@ -178,53 +184,14 @@ async def send_message(
     message_request: MessageRequest,
 ):
     """Send message to assistant (like EmailJS send)"""
-    print(f"💬 Message request - Session: {message_request.session_token[:20]}..., Assistant: {message_request.assistant_id}")
+    # Log with redacted token
+    logger.info(f"Message request - Session: {redact_token(message_request.session_token)}, Assistant: {message_request.assistant_id}")
     try:
         start_time = time.time()
-        
-        # Debug: Check raw database first
-        from app.database import get_db_connection
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT session_token, expires_at, project_id FROM public_sessions WHERE session_token = %s", (message_request.session_token,))
-        raw_session = cursor.fetchone()
-        print(f"🔍 Raw DB check: {raw_session is not None}")
-        if raw_session:
-            print(f"📅 Raw session: expires_at={raw_session[1]}, project_id={raw_session[2]}")
-            # Check if project is active
-            cursor.execute("SELECT is_active FROM projects WHERE project_id = %s", (raw_session[2],))
-            project_active = cursor.fetchone()
-            print(f"🔍 Project active: {project_active[0] if project_active else 'NOT FOUND'}")
-            
-            # Test the actual JOIN query step by step
-            cursor.execute("""
-                SELECT s.session_token, p.project_id, p.is_active, s.expires_at > NOW() as not_expired
-                FROM public_sessions s
-                JOIN projects p ON s.project_id = p.project_id
-                WHERE s.session_token = %s
-            """, (message_request.session_token,))
-            join_result = cursor.fetchone()
-            print(f"🔍 JOIN test: {join_result is not None}")
-            if join_result:
-                print(f"🔍 JOIN details: token_match={join_result[0][:20]}..., project_id={join_result[1]}, is_active={join_result[2]}, not_expired={join_result[3]}")
-            else:
-                print(f"🔍 JOIN failed - checking both tables separately:")
-                cursor.execute("SELECT project_id FROM public_sessions WHERE session_token = %s", (message_request.session_token,))
-                session_project = cursor.fetchone()
-                cursor.execute("SELECT project_id FROM projects WHERE project_id = %s", (raw_session[2],))
-                project_exists = cursor.fetchone()
-                print(f"🔍 Session project_id: {session_project[0] if session_project else 'NONE'}")
-                print(f"🔍 Project exists: {project_exists[0] if project_exists else 'NONE'}")
-        cursor.close()
-        conn.close()
 
         # Validate session
         session = SessionDB.get_session_by_token(message_request.session_token)
-        print(f"🔍 Session lookup result: {session is not None}")
-        if session:
-            print(f"✅ Session found: expires_at={session.get('expires_at')}, is_expired={session.get('expires_at') < datetime.now() if session.get('expires_at') else 'unknown'}")
-        else:
-            print(f"❌ Session not found for token: {message_request.session_token}")
+        logger.debug(f"Session validation result: {'valid' if session else 'invalid'}")
         
         if not session:
             raise HTTPException(
@@ -324,16 +291,16 @@ async def send_message(
             project_id=assistant.get('project_id'),  # Same as frontend
             assistant_config=assistant
         )
-        # Debug: Check vector store stats
+        # Check vector store stats (debug level only)
         vector_stats = assistant_rag_service.vector_store.get_stats()
-        print(f"🔍 Vector store stats for project {session['project_id']}: {vector_stats}")
-        
+        logger.debug(f"Vector store stats for project {session['project_id']}: {vector_stats}")
+
         rag_result = assistant_rag_service.query(
-            sanitized_message, 
+            sanitized_message,
             system_instructions=assistant['initial_context']
         )
-        
-        print(f"🔍 RAG result - context_used: {rag_result.get('context_used', False)}, sources: {len(rag_result.get('sources', []))}")
+
+        logger.debug(f"RAG result - context_used: {rag_result.get('context_used', False)}, sources: {len(rag_result.get('sources', []))}")
         
         # Add assistant response
         ConversationDB.add_message(
@@ -410,41 +377,31 @@ async def get_project_info(
     request: Request
 ):
     """Get basic project information (public endpoint)"""
-    print(f"🔍 Bad Request Debug - Project: {project_id}, Origin: {request.headers.get('origin')}, Method: {request.method}")
+    logger.info(f"Project info request - Project: {project_id}, Origin: {request.headers.get('origin')}")
     try:
-        # Add detailed logging
-        logger.info(f"🔍 Project info request for: {project_id}")
-        logger.info(f"📡 Request method: {request.method}")
-        logger.info(f"🌐 Request headers: {dict(request.headers)}")
-        logger.info(f"🎯 Request URL: {request.url}")
         
         # Get project
         project = ProjectDB.get_project_by_id(project_id)
         if not project:
-            logger.error(f"❌ Project not found: {project_id}")
+            logger.warning(f"Project not found: {project_id}")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Project not found"
             )
-        
-        logger.info(f"✅ Project found: {project.get('name', 'Unknown')}")
-        logger.info(f"🔒 Allowed domains: {project.get('allowed_domains', [])}")
-        
+
         # Get client info
         client_info = get_client_info(request)
-        logger.info(f"👤 Client info: {client_info}")
-        
+
         # Validate domain if restrictions are set
         domain_valid = validate_domain(project['allowed_domains'], client_info['origin'])
-        logger.info(f"🌍 Domain validation result: {domain_valid} for origin: {client_info['origin']}")
-        
+
         if not domain_valid:
-            logger.error(f"🚫 Domain not allowed: {client_info['origin']} not in {project['allowed_domains']}")
+            logger.warning(f"Domain not allowed - Project: {project_id}, Origin: {client_info['origin']}")
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Domain not allowed for this project"
             )
-        
+
         # Return safe project info
         return {
             "project_id": project['project_id'],
@@ -458,13 +415,11 @@ async def get_project_info(
                 "requests_per_session": project['requests_per_session']
             }
         }
-        
-    except HTTPException as he:
-        logger.error(f"🚨 HTTPException in project info: Status {he.status_code}, Detail: {he.detail}")
+
+    except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"💥 Unexpected error in project info for {project_id}: {str(e)}")
-        logger.exception("Full traceback:")
+        logger.error(f"Unexpected error in project info for {project_id}: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to get project information"

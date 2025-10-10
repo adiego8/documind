@@ -7,11 +7,16 @@ from app.database import AssistantDB, DocumentDB
 from app.auth import get_current_user, get_current_admin_user
 from app.document_processor import DocumentProcessor
 from app.rag_service import RAGService
+from app.config import settings
 
 router = APIRouter(prefix="/assistants", tags=["documents"])
 
 # Initialize document processor
 document_processor = DocumentProcessor()
+
+# File upload limits
+MAX_FILE_SIZE = settings.max_file_size_bytes
+ALLOWED_EXTENSIONS = {'.pdf', '.docx', '.txt'}
 
 @router.post("/{assistant_id}/documents")
 async def upload_documents_to_assistant(
@@ -35,14 +40,40 @@ async def upload_documents_to_assistant(
     print(f"🔧 Vector store project_id: {rag_service.vector_store.project_id}")
     
     uploaded_files = []
-    
+
     for file in files:
-        if file.filename and file.filename.endswith(('.pdf', '.docx', '.txt')):
-            with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file.filename)[1]) as tmp_file:
-                content = await file.read()
-                tmp_file.write(content)
-                tmp_file_path = tmp_file.name
-                file_size = len(content)
+        # Validate file extension
+        if not file.filename:
+            raise HTTPException(status_code=400, detail="Filename is required")
+
+        file_ext = os.path.splitext(file.filename)[1].lower()
+        if file_ext not in ALLOWED_EXTENSIONS:
+            raise HTTPException(
+                status_code=400,
+                detail=f"File type '{file_ext}' not allowed. Supported types: {', '.join(ALLOWED_EXTENSIONS)}"
+            )
+
+        # Read file content
+        content = await file.read()
+        file_size = len(content)
+
+        # Validate file size
+        if file_size > MAX_FILE_SIZE:
+            raise HTTPException(
+                status_code=413,
+                detail=f"File '{file.filename}' is too large ({file_size / 1024 / 1024:.2f}MB). Maximum allowed size is {settings.max_file_size_mb}MB"
+            )
+
+        if file_size == 0:
+            raise HTTPException(
+                status_code=400,
+                detail=f"File '{file.filename}' is empty"
+            )
+
+        # Save to temporary file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=file_ext) as tmp_file:
+            tmp_file.write(content)
+            tmp_file_path = tmp_file.name
             
             try:
                 # Generate unique document ID prefix for tracking chunks

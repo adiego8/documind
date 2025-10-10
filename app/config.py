@@ -24,8 +24,8 @@ class Settings:
         # Server Configuration
         self.host = os.getenv("HOST", "0.0.0.0")
         self.port = int(os.getenv("PORT", "8082"))
-        self.debug = os.getenv("DEBUG", "true").lower() == "true"
-        self.reload = os.getenv("RELOAD", "true").lower() == "true"
+        self.debug = os.getenv("DEBUG", "false").lower() == "true"  # Secure default: disabled
+        self.reload = os.getenv("RELOAD", "false").lower() == "true"  # Secure default: disabled
         
         # CORS Configuration
         self.frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
@@ -53,7 +53,7 @@ class Settings:
             self.db_port = os.getenv("DB_PORT", "5432")
             self.db_name = os.getenv("DB_NAME", "ragdb")
             self.db_user = os.getenv("DB_USER", "postgres")
-            self.db_password = os.getenv("DB_PASSWORD", "password")
+            self.db_password = self._get_required_secret("DB_PASSWORD")
             self.db_requires_ssl = os.getenv("DB_REQUIRES_SSL", "false").lower() == "true"
         
         # OpenAI Configuration
@@ -70,10 +70,31 @@ class Settings:
         self.chunk_size = int(os.getenv("CHUNK_SIZE", "1000"))
         self.chunk_overlap = int(os.getenv("CHUNK_OVERLAP", "200"))
         self.supported_file_types = os.getenv("SUPPORTED_FILE_TYPES", ".pdf,.docx,.txt")
+        self.max_file_size_mb = int(os.getenv("MAX_FILE_SIZE_MB", "10"))  # 10MB default
+        self.max_file_size_bytes = self.max_file_size_mb * 1024 * 1024
         
         # Authentication
-        self.secret_key = os.getenv("SECRET_KEY", "your-secret-key-here")
+        self.secret_key = self._get_required_secret("SECRET_KEY")
         self.access_token_expire_minutes = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
         self.algorithm = os.getenv("ALGORITHM", "HS256")
+
+    def _get_required_secret(self, env_var_name: str) -> str:
+        """Get required secret from environment or fail"""
+        value = os.getenv(env_var_name)
+
+        if not value:
+            raise ValueError(
+                f"\n❌ CRITICAL: {env_var_name} environment variable is required!\n\n"
+                f"Generate a secure secret:\n"
+                f"  python -c \"import secrets; print(secrets.token_urlsafe(32))\"\n\n"
+                f"Then set it:\n"
+                f"  export {env_var_name}=<generated-secret>\n"
+            )
+
+        # Warn if secret looks weak
+        if len(value) < 32 or value in ["your-secret-key-here", "secret", "password", "changeme"]:
+            print(f"\n⚠️  WARNING: {env_var_name} appears weak (length: {len(value)}). Use 32+ random characters.\n")
+
+        return value
 
 settings = Settings()

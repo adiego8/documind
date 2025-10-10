@@ -496,26 +496,8 @@ class ConversationDB:
     def get_conversations_by_admin(admin_user_id: str, limit: int = 100, user_id: str = None, assistant_id: str = None, username: str = None):
         """Get all conversations for users registered under the same admin code as the admin user with optional filters"""
         with get_db_cursor(commit=False) as cursor:
-            # Build dynamic WHERE conditions
-            where_conditions = ["ac.id = (SELECT admin_code_id FROM users WHERE id = %s AND role = 'admin')"]
-            params = [admin_user_id]
-            
-            if user_id:
-                where_conditions.append("c.user_id = %s")
-                params.append(user_id)
-            
-            if assistant_id:
-                where_conditions.append("c.assistant_id = %s")
-                params.append(assistant_id)
-            
-            if username:
-                where_conditions.append("u.username ILIKE %s")
-                params.append(f"%{username}%")
-            
-            params.append(limit)
-            
-            where_clause = ' AND '.join(where_conditions)
-            query = f"""
+            # Build base query
+            base_query = """
                 SELECT c.*, u.username, a.name as assistant_name,
                        (SELECT COUNT(*) FROM conversation_messages cm WHERE cm.conversation_id = c.id) as message_count,
                        (SELECT MAX(created_at) FROM conversation_messages cm WHERE cm.conversation_id = c.id) as last_message_at
@@ -523,12 +505,32 @@ class ConversationDB:
                 JOIN users u ON c.user_id = u.id
                 JOIN assistants a ON c.assistant_id = a.id
                 JOIN admin_codes ac ON u.admin_code_id = ac.id
-                WHERE {where_clause}
-                ORDER BY c.updated_at DESC
-                LIMIT %s
+                WHERE ac.id = (SELECT admin_code_id FROM users WHERE id = %s AND role = 'admin')
             """
-            cursor.execute(query, params)
-            
+
+            # Build params list
+            params = [admin_user_id]
+
+            # Add optional filters using parameterized queries only
+            if user_id:
+                base_query += " AND c.user_id = %s"
+                params.append(user_id)
+
+            if assistant_id:
+                base_query += " AND c.assistant_id = %s"
+                params.append(assistant_id)
+
+            if username:
+                base_query += " AND u.username ILIKE %s"
+                params.append(f"%{username}%")
+
+            # Add ordering and limit
+            base_query += " ORDER BY c.updated_at DESC LIMIT %s"
+            params.append(limit)
+
+            # Execute with all parameters
+            cursor.execute(base_query, tuple(params))
+
             return [dict(row) for row in cursor.fetchall()]
     
     @staticmethod
