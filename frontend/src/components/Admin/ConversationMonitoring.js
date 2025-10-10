@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -36,11 +36,11 @@ import {
   Clear as ClearIcon,
 } from '@mui/icons-material';
 import { useSelector, useDispatch } from 'react-redux';
-import { 
-  getAdminConversations, 
-  getConversationMessages, 
+import {
+  getAdminConversations,
+  getConversationMessages,
   clearError,
-  clearConversationMessages 
+  clearConversationMessages
 } from '../../store/slices/adminSlice';
 import { getAssistants } from '../../store/slices/assistantsSlice';
 
@@ -65,7 +65,7 @@ const ConversationMonitoring = () => {
 
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [messagesDialogOpen, setMessagesDialogOpen] = useState(false);
-  
+
   // Filter state
   const [filters, setFilters] = useState({
     username: '',
@@ -133,14 +133,15 @@ const ConversationMonitoring = () => {
     dispatch(getAdminConversations(filterParams));
   };
 
-  const currentMessages = selectedConversation 
+  const currentMessages = selectedConversation
     ? conversationMessages[selectedConversation.id] || []
     : [];
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" component="h2">
+    <Box sx={{ width: '100%' }}>
+      {/* Header */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, pt: 2, px: 2 }}>
+        <Typography variant="h5" component="h2" sx={{ fontWeight: 600 }}>
           User Conversations
         </Typography>
         <Button
@@ -174,204 +175,213 @@ const ConversationMonitoring = () => {
       </Box>
 
       {error && (
-        <Alert 
-          severity="error" 
+        <Alert
+          severity="error"
           onClose={() => dispatch(clearError())}
-          sx={{ mb: 3 }}
+          sx={{
+            mb: 3,
+            mx: 2,
+            borderRadius: 3,
+            border: '1px solid rgba(244, 67, 54, 0.2)',
+            boxShadow: '0 4px 20px rgba(244, 67, 54, 0.1)'
+          }}
         >
           {formatError(error)}
         </Alert>
       )}
 
       {/* Filter Controls */}
-      <Paper 
-        elevation={8}
-        sx={{ 
-          p: 3, 
-          mb: 3,
-          borderRadius: 3,
-          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-          border: '1px solid rgba(102, 126, 234, 0.1)'
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <FilterIcon sx={{ mr: 1 }} />
-          <Typography variant="h6">Filters</Typography>
-        </Box>
-        <Grid container spacing={2} alignItems="center">
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <TextField
-              fullWidth
-              label="Username"
-              value={filters.username}
-              onChange={handleFilterChange('username')}
-              placeholder="Search by username..."
-              size="small"
-            />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Assistant</InputLabel>
-              <Select
-                value={filters.assistant_id}
-                label="Assistant"
-                onChange={handleFilterChange('assistant_id')}
+      <Box sx={{ px: 2, mb: 3 }}>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 3,
+            borderRadius: 3,
+            // background: 'rgba(255, 255, 255, 0.9)',
+            border: '1px solid rgba(102, 126, 234, 0.1)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <FilterIcon sx={{ mr: 1, color: '#667eea' }} />
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>Filters</Typography>
+          </Box>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} sm={6} md={4}>
+              <TextField
+                fullWidth
+                label="Username"
+                value={filters.username}
+                onChange={handleFilterChange('username')}
+                placeholder="Search by username..."
+                size="small"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Assistant</InputLabel>
+                <Select
+                  value={filters.assistant_id}
+                  label="Assistant"
+                  onChange={handleFilterChange('assistant_id')}
+                >
+                  <MenuItem value="">All Assistants</MenuItem>
+                  {assistants.map((assistant) => (
+                    <MenuItem key={assistant.id} value={assistant.id}>
+                      {assistant.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6} md={2}>
+              <TextField
+                fullWidth
+                label="Limit"
+                type="number"
+                value={filters.limit}
+                onChange={handleFilterChange('limit')}
+                inputProps={{ min: 10, max: 1000 }}
+                size="small"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={2}>
+              <Button
+                variant="outlined"
+                startIcon={<ClearIcon />}
+                onClick={handleClearFilters}
+                fullWidth
+                sx={{
+                  height: 40,
+                  borderRadius: 2,
+                  color: '#f5576c',
+                  border: '1px solid rgba(245, 87, 108, 0.3)',
+                  '&:hover': {
+                    background: 'rgba(245, 87, 108, 0.08)',
+                    border: '1px solid rgba(245, 87, 108, 0.5)',
+                    transform: 'translateY(-1px)'
+                  },
+                  transition: 'all 0.2s ease-in-out'
+                }}
               >
-                <MenuItem value="">All Assistants</MenuItem>
-                {assistants.map((assistant) => (
-                  <MenuItem key={assistant.id} value={assistant.id}>
-                    {assistant.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+                Clear Filters
+              </Button>
+            </Grid>
           </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-            <TextField
-              fullWidth
-              label="Limit"
-              type="number"
-              value={filters.limit}
-              onChange={handleFilterChange('limit')}
-              inputProps={{ min: 10, max: 1000 }}
-              size="small"
-            />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 4 }} sx={{ display: 'flex', alignItems: 'center' }}>
-            <Button
-              variant="outlined"
-              startIcon={<ClearIcon />}
-              onClick={handleClearFilters}
-              sx={{ 
-                height: 40,
-                minWidth: 120,
-                ml: 'auto',
-                borderRadius: 2,
-                color: '#f5576c',
-                border: '1px solid rgba(245, 87, 108, 0.3)',
-                '&:hover': {
-                  background: 'rgba(245, 87, 108, 0.08)',
-                  border: '1px solid rgba(245, 87, 108, 0.5)',
-                  transform: 'translateY(-1px)'
-                },
-                transition: 'all 0.2s ease-in-out'
-              }}
-            >
-              Clear Filters
-            </Button>
-          </Grid>
-        </Grid>
-      </Paper>
+        </Paper>
+      </Box>
 
-      <Grid container spacing={3}>
-        {conversations.map((conversation) => (
-          <Grid size={{ xs: 12, md: 6, lg: 4 }} key={conversation.id}>
-            <Card sx={{ 
-              height: '100%', 
-              display: 'flex', 
-              flexDirection: 'column',
-              borderRadius: 3,
-              background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-              border: '1px solid rgba(102, 126, 234, 0.1)',
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-              transition: 'all 0.3s ease-in-out',
-              cursor: 'pointer',
-              '&:hover': {
-                transform: 'translateY(-4px)',
-                boxShadow: '0 8px 25px rgba(102, 126, 234, 0.15)'
-              }
-            }}>
-              <CardContent sx={{ flex: 1 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Avatar sx={{ 
-                    mr: 2, 
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    boxShadow: '0 2px 8px rgba(102, 126, 234, 0.3)'
-                  }}>
-                    <PersonIcon />
-                  </Avatar>
-                  <Box>
-                    <Typography variant="h6" component="h3">
-                      {conversation.username}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      User ID: {conversation.user_id}
+      <Box sx={{ px: 2 }}>
+        <Grid container spacing={3}>
+          {conversations.map((conversation) => (
+            <Grid item xs={12} md={6} lg={4} key={conversation.id}>
+              <Card sx={{
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                borderRadius: 3,
+                background: 'inherit',
+                border: '1px solid rgba(102, 126, 234, 0.1)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                transition: 'all 0.3s ease-in-out',
+                cursor: 'pointer',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 12px 40px rgba(102, 126, 234, 0.15)'
+                }
+              }}>
+                <CardContent sx={{ flex: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <Avatar sx={{
+                      mr: 2,
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      boxShadow: '0 2px 8px rgba(102, 126, 234, 0.3)'
+                    }}>
+                      <PersonIcon />
+                    </Avatar>
+                    <Box>
+                      <Typography variant="h6" component="h3">
+                        {conversation.username}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        User ID: {conversation.user_id}
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <BotIcon sx={{ mr: 1, color: 'primary.main', fontSize: 16 }} />
+                    <Typography variant="body2">
+                      <strong>Assistant:</strong> {conversation.assistant_name}
                     </Typography>
                   </Box>
-                </Box>
-                
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <BotIcon sx={{ mr: 1, color: 'primary.main', fontSize: 16 }} />
-                  <Typography variant="body2">
-                    <strong>Assistant:</strong> {conversation.assistant_name}
-                  </Typography>
-                </Box>
 
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-                  <Chip 
-                    label={`${conversation.message_count} messages`} 
-                    size="small" 
-                    sx={{
-                      background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-                      color: 'white',
-                      border: 'none',
-                      fontWeight: 500
-                    }}
-                  />
-                  <Chip 
-                    label={`ID: ${conversation.id}`} 
-                    size="small" 
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+                    <Chip
+                      label={`${conversation.message_count} messages`}
+                      size="small"
+                      sx={{
+                        background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                        color: 'white',
+                        border: 'none',
+                        fontWeight: 500
+                      }}
+                    />
+                    <Chip
+                      label={`ID: ${conversation.id}`}
+                      size="small"
+                      sx={{
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        color: 'white',
+                        border: 'none',
+                        fontWeight: 500
+                      }}
+                    />
+                  </Box>
+
+                  <Typography variant="caption" color="text.secondary">
+                    <strong>Started:</strong> {formatDate(conversation.created_at)}
+                  </Typography>
+                  <br />
+                  <Typography variant="caption" color="text.secondary">
+                    <strong>Last activity:</strong> {formatTimestamp(conversation.last_message_at)}
+                  </Typography>
+                </CardContent>
+
+                <CardActions sx={{ p: 2, justifyContent: 'flex-end' }}>
+                  <Button
+                    size="small"
+                    startIcon={<ViewIcon />}
+                    onClick={() => handleViewMessages(conversation)}
+                    variant="contained"
                     sx={{
                       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      color: 'white',
-                      border: 'none',
-                      fontWeight: 500
+                      borderRadius: 2,
+                      px: 2,
+                      py: 1,
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      boxShadow: '0 2px 8px rgba(102, 126, 234, 0.3)',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
+                        boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)',
+                        transform: 'translateY(-1px)'
+                      },
+                      transition: 'all 0.2s ease-in-out'
                     }}
-                  />
-                </Box>
-
-                <Typography variant="caption" color="text.secondary">
-                  <strong>Started:</strong> {formatDate(conversation.created_at)}
-                </Typography>
-                <br />
-                <Typography variant="caption" color="text.secondary">
-                  <strong>Last activity:</strong> {formatTimestamp(conversation.last_message_at)}
-                </Typography>
-              </CardContent>
-
-              <CardActions sx={{ p: 2, justifyContent: 'flex-end' }}>
-                <Button
-                  size="small"
-                  startIcon={<ViewIcon />}
-                  onClick={() => handleViewMessages(conversation)}
-                  variant="contained"
-                  sx={{
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    borderRadius: 2,
-                    px: 2,
-                    py: 1,
-                    fontSize: '0.85rem',
-                    fontWeight: 600,
-                    textTransform: 'none',
-                    boxShadow: '0 2px 8px rgba(102, 126, 234, 0.3)',
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
-                      boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)',
-                      transform: 'translateY(-1px)'
-                    },
-                    transition: 'all 0.2s ease-in-out'
-                  }}
-                >
-                  View Messages
-                </Button>
-              </CardActions>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+                  >
+                    View Messages
+                  </Button>
+                </CardActions>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
 
       {conversations.length === 0 && !isLoading && (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
+        <Box sx={{ textAlign: 'center', py: 8, px: 2 }}>
           <ChatIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
             No conversations yet
@@ -388,23 +398,21 @@ const ConversationMonitoring = () => {
         onClose={handleCloseMessages}
         maxWidth="md"
         fullWidth
-        sx={{ 
-          '& .MuiDialog-paper': { 
+        PaperProps={{
+          sx: {
             height: '80vh',
-            borderRadius: 4,
-            background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+            border: '1px solid rgba(102, 126, 234, 0.1)'
           }
         }}
       >
-        <DialogTitle sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
+        <DialogTitle sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
-          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-          borderBottom: '1px solid rgba(102, 126, 234, 0.1)',
-          borderRadius: '16px 16px 0 0'
+          borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+          fontWeight: 600
         }}>
           <Box>
             <Typography variant="h6">
@@ -414,13 +422,14 @@ const ConversationMonitoring = () => {
               {selectedConversation && formatTimestamp(selectedConversation.created_at)}
             </Typography>
           </Box>
-          <IconButton 
+          <IconButton
             onClick={handleCloseMessages}
             sx={{
-              background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-              color: 'white',
+              color: '#f5576c',
+              border: '1px solid rgba(245, 87, 108, 0.3)',
               '&:hover': {
-                background: 'linear-gradient(135deg, #e078f0 0%, #e73c5e 100%)',
+                background: 'rgba(245, 87, 108, 0.08)',
+                border: '1px solid rgba(245, 87, 108, 0.5)',
                 transform: 'scale(1.1)'
               },
               transition: 'all 0.2s ease-in-out'
@@ -429,11 +438,10 @@ const ConversationMonitoring = () => {
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-        
-        <DialogContent sx={{ 
+
+        <DialogContent sx={{
           p: 0,
-          background: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(10px)'
+          // background: 'rgba(255, 255, 255, 0.95)'
         }}>
           <Box sx={{ height: '100%', overflow: 'auto', p: 2 }}>
             {currentMessages.length === 0 ? (
@@ -449,11 +457,11 @@ const ConversationMonitoring = () => {
                     {message.role === 'user' ? (
                       // User Message
                       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
-                        <Paper sx={{ 
-                          maxWidth: '70%', 
+                        <Paper sx={{
+                          maxWidth: '70%',
                           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                           color: 'white',
-                          p: 2, 
+                          p: 2,
                           borderRadius: '20px 20px 6px 20px',
                           boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
                           animation: 'slideInRight 0.3s ease-out',
@@ -480,10 +488,10 @@ const ConversationMonitoring = () => {
                     ) : (
                       // Assistant Message
                       <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
-                        <Paper sx={{ 
-                          maxWidth: '70%', 
-                          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-                          p: 2, 
+                        <Paper sx={{
+                          maxWidth: '70%',
+                          // background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                          p: 2,
                           borderRadius: '20px 20px 20px 6px',
                           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
                           border: '1px solid rgba(102, 126, 234, 0.1)',
@@ -543,9 +551,26 @@ const ConversationMonitoring = () => {
             )}
           </Box>
         </DialogContent>
-        
-        <DialogActions>
-          <Button onClick={handleCloseMessages}>Close</Button>
+
+        <DialogActions sx={{ p: 3, borderTop: '1px solid rgba(0, 0, 0, 0.08)' }}>
+          <Button
+            onClick={handleCloseMessages}
+            sx={{
+              borderRadius: 2,
+              px: 3,
+              py: 1,
+              color: '#667eea',
+              border: '1px solid rgba(102, 126, 234, 0.3)',
+              '&:hover': {
+                background: 'rgba(102, 126, 234, 0.08)',
+                border: '1px solid rgba(102, 126, 234, 0.5)',
+                transform: 'translateY(-1px)'
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}
+          >
+            Close
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

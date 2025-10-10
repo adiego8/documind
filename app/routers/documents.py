@@ -25,7 +25,14 @@ async def upload_documents_to_assistant(
         raise HTTPException(status_code=404, detail="Assistant not found")
     
     # Create RAG service for this assistant with its configuration
-    rag_service = RAGService.create_for_assistant(assistant_id, assistant.get('document_collection'), assistant)
+    rag_service = RAGService.create_for_assistant(
+        assistant_id,
+        project_id=assistant.get('project_id'),
+        assistant_config=assistant
+    )
+    
+    print(f"🔧 Document upload - assistant_id: {assistant_id}, project_id: {assistant.get('project_id')}")
+    print(f"🔧 Vector store project_id: {rag_service.vector_store.project_id}")
     
     uploaded_files = []
     
@@ -49,7 +56,11 @@ async def upload_documents_to_assistant(
                 )
                 
                 # Add documents to vector store
+                print(f"🔧 Adding {len(documents)} documents to vector store")
                 rag_service.add_documents(documents)
+                print(f"🔧 Documents added. Checking stats...")
+                stats = rag_service.get_document_stats()
+                print(f"🔧 Vector store stats after upload: {stats}")
                 
                 # Create document record in database
                 document_record = DocumentDB.create_document(
@@ -148,18 +159,16 @@ async def delete_assistant_document(
         document_id_prefix = document['document_id_prefix']
         
         # Create RAG service and delete chunks from vector store
-        collection_cleaned = False
         try:
-            rag_service = RAGService.create_for_assistant(assistant_id, assistant.get('document_collection'), assistant)
+            rag_service = RAGService.create_for_assistant(
+                assistant_id,
+                project_id=assistant.get('project_id'),
+                assistant_config=assistant
+            )
             
-            # Delete chunks by prefix
-            deleted_count = rag_service.delete_documents_by_prefix(document_id_prefix)
-            print(f"Successfully deleted {deleted_count} chunks from ChromaDB for document {document_id_prefix}")
-            
-            # Check if collection is now empty and delete it if so
-            collection_cleaned = rag_service.delete_collection_if_empty()
-            if collection_cleaned:
-                print(f"Collection was empty after deletion, cleaned up collection for assistant {assistant_id}")
+            # Delete document from vector store
+            deleted_count = rag_service.delete_document(document_id_prefix)
+            print(f"Successfully deleted {deleted_count} chunks from vector store for document {document_id_prefix}")
                 
         except Exception as e:
             print(f"Warning: Failed to delete chunks from vector store for document {document_id_prefix}: {e}")
@@ -171,8 +180,7 @@ async def delete_assistant_document(
         return {
             "message": f"Successfully deleted document {document['filename']}",
             "document_id": document_id,
-            "chunks_deleted": document['chunk_count'],
-            "collection_cleaned": collection_cleaned
+            "chunks_deleted": document['chunk_count']
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error deleting document: {str(e)}")
@@ -194,7 +202,11 @@ async def clear_assistant_documents(
         
         # Create RAG service and clear all documents from vector store
         try:
-            rag_service = RAGService.create_for_assistant(assistant_id, assistant.get('document_collection'), assistant)
+            rag_service = RAGService.create_for_assistant(
+                assistant_id,
+                project_id=assistant.get('project_id'),
+                assistant_config=assistant
+            )
             rag_service.clear_all_documents()
             print(f"Successfully cleared all documents from ChromaDB for assistant {assistant_id}")
         except Exception as e:

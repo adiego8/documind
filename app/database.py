@@ -166,7 +166,12 @@ class AssistantDB:
                 WHERE is_active = true
                 ORDER BY created_at ASC
             """)
-            return [dict(row) for row in cursor.fetchall()]
+            assistants = [dict(row) for row in cursor.fetchall()]
+            # Ensure document_collection is never None for API compatibility
+            for assistant in assistants:
+                if assistant['document_collection'] is None:
+                    assistant['document_collection'] = ''
+            return assistants
     
     @staticmethod
     def get_assistants_by_admin_code(admin_code_id: str) -> List[Dict[str, Any]]:
@@ -179,7 +184,12 @@ class AssistantDB:
                 WHERE admin_code_id = %s AND is_active = true
                 ORDER BY created_at DESC
             """, (admin_code_id,))
-            return [dict(row) for row in cursor.fetchall()]
+            assistants = [dict(row) for row in cursor.fetchall()]
+            # Ensure document_collection is never None for API compatibility
+            for assistant in assistants:
+                if assistant['document_collection'] is None:
+                    assistant['document_collection'] = ''
+            return assistants
     
     @staticmethod
     def get_assistant_by_id(assistant_id: str) -> Optional[Dict[str, Any]]:
@@ -192,7 +202,13 @@ class AssistantDB:
                 WHERE id = %s AND is_active = true
             """, (assistant_id,))
             result = cursor.fetchone()
-            return dict(result) if result else None
+            if result:
+                assistant = dict(result)
+                # Ensure document_collection is never None for API compatibility
+                if assistant['document_collection'] is None:
+                    assistant['document_collection'] = ''
+                return assistant
+            return None
     
     @staticmethod
     def create_assistant(name: str, description: str, initial_context: str, 

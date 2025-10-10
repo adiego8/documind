@@ -19,7 +19,11 @@ async def query_assistant(
     
     try:
         # Create RAG service for this assistant with its configuration
-        assistant_rag_service = RAGService.create_for_assistant(assistant_id, assistant.get('document_collection'), assistant)
+        assistant_rag_service = RAGService.create_for_assistant(
+            assistant_id, 
+            project_id=assistant.get('project_id'),
+            assistant_config=assistant
+        )
         
         # Get AI response
         system_instructions = assistant['initial_context']

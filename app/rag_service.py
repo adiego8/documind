@@ -5,8 +5,8 @@ from app.vector_store import VectorStore
 from app.llm_config import LLMConfig
 
 class RAGService:
-    def __init__(self, collection_name: str = "documents", llm_config: Optional[Dict[str, Any]] = None):
-        self.vector_store = VectorStore(collection_name=collection_name)
+    def __init__(self, project_id: str = None, assistant_id: str = None, llm_config: Optional[Dict[str, Any]] = None):
+        self.vector_store = VectorStore(project_id=project_id, assistant_id=assistant_id)
         
         # Use provided config or default
         if llm_config:
@@ -22,13 +22,8 @@ class RAGService:
         )
     
     @classmethod
-    def create_for_assistant(cls, assistant_id: str, document_collection: str = None, assistant_config: Optional[Dict[str, Any]] = None):
+    def create_for_assistant(cls, assistant_id: str, project_id: str = None, assistant_config: Optional[Dict[str, Any]] = None):
         """Create a RAGService instance for a specific assistant"""
-        if document_collection and document_collection != 'default':
-            collection_name = document_collection
-        else:
-            collection_name = f"assistant_{assistant_id}_docs"
-        
         # Extract LLM config from assistant config if provided
         llm_config = None
         if assistant_config:
@@ -43,7 +38,8 @@ class RAGService:
             if not llm_config:
                 llm_config = None
         
-        return cls(collection_name=collection_name, llm_config=llm_config)
+        print(f"🔧 Creating RAGService with project_id={project_id}, assistant_id={assistant_id}")
+        return cls(project_id=project_id, assistant_id=assistant_id, llm_config=llm_config)
     
     def add_documents(self, documents: List[Dict[str, Any]]) -> None:
         """Add documents to this assistant's vector store"""
@@ -51,11 +47,11 @@ class RAGService:
     
     def get_document_stats(self) -> Dict[str, Any]:
         """Get document statistics for this assistant"""
-        return self.vector_store.get_collection_stats()
+        return self.vector_store.get_stats()
     
     def clear_documents(self) -> None:
         """Clear all documents for this assistant"""
-        self.vector_store.delete_collection()
+        self.vector_store.clear_project_documents()
     
     def generate_response(self, query: str, context_docs: List[Dict[str, Any]], system_instructions: str = None) -> str:
         context = "\n\n".join([doc["content"] for doc in context_docs])
@@ -83,7 +79,10 @@ Answer:"""
         return response.content
     
     def query(self, question: str, n_results: int = 5, system_instructions: str = None) -> Dict[str, Any]:
-        relevant_docs = self.vector_store.similarity_search(question, n_results)
+        print(f"🔍 RAG Query - Question: {question[:100]}")
+        print(f"🔍 RAG Query - Assistant ID: {self.vector_store.assistant_id}")
+        relevant_docs = self.vector_store.search(question, k=n_results)
+        print(f"🔍 RAG Query - Found {len(relevant_docs)} relevant documents")
         
         if not relevant_docs:
             response = self.generate_response(question, [], system_instructions)
@@ -98,9 +97,9 @@ Answer:"""
         sources = []
         for doc in relevant_docs:
             sources.append({
-                "source": doc["metadata"]["source"],
-                "chunk_id": doc["metadata"]["chunk_id"],
-                "similarity_score": doc["similarity_score"],
+                "source": doc["metadata"].get("source", "unknown"),
+                "chunk_id": doc.get("chunk_index", 0),
+                "similarity_score": doc.get("score", 0.0),
                 "content_preview": doc["content"][:200] + "..." if len(doc["content"]) > 200 else doc["content"]
             })
         
@@ -111,22 +110,11 @@ Answer:"""
             "total_documents_found": len(relevant_docs)
         }
     
-    def get_document_stats(self) -> Dict[str, Any]:
-        """Get document statistics for this RAG service"""
-        return self.vector_store.get_collection_stats()
     
-    def delete_documents_by_prefix(self, document_id_prefix: str) -> int:
-        """Delete all documents with the given prefix"""
-        return self.vector_store.delete_documents_by_prefix(document_id_prefix)
+    def delete_document(self, document_id: str) -> int:
+        """Delete a document by its ID"""
+        return self.vector_store.delete_document(document_id)
     
     def clear_all_documents(self):
         """Clear all documents from the vector store"""
-        self.vector_store.delete_collection()
-    
-    def delete_collection_if_empty(self) -> bool:
-        """Delete the collection if it becomes empty after document deletion"""
-        return self.vector_store.delete_collection_if_empty()
-    
-    def delete_collection(self):
-        """Force delete the entire collection"""
-        self.vector_store.delete_collection()
+        self.vector_store.clear_project_documents()

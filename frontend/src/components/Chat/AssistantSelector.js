@@ -25,18 +25,40 @@ const AssistantSelector = () => {
 
   return (
     <Paper
-      elevation={8}
+      elevation={0}
       sx={{
         mb: { xs: 1.5, sm: 2 },
         p: { xs: 1.5, sm: 2 },
-        background: 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(10px)',
+        background: 'rgba(17, 24, 39, 0.6)',
+        backdropFilter: 'blur(20px)',
         borderRadius: 3,
-        border: '1px solid rgba(255, 255, 255, 0.2)'
+        border: '1px solid rgba(74, 222, 128, 0.1)',
+        boxShadow: '0 0 40px rgba(74, 222, 128, 0.05)',
+        transition: 'all 0.3s ease',
+        '&:hover': {
+          borderColor: 'rgba(74, 222, 128, 0.2)',
+          boxShadow: '0 0 50px rgba(74, 222, 128, 0.08)'
+        }
       }}
     >
       <FormControl fullWidth variant="outlined" size="medium">
-        <InputLabel id="assistant-select-label">Select Assistant</InputLabel>
+        <InputLabel
+          id="assistant-select-label"
+          sx={{
+            fontFamily: '"JetBrains Mono", monospace',
+            fontSize: '0.85rem',
+            color: 'rgba(156, 163, 175, 0.7)',
+            '&.Mui-focused': {
+              color: '#4ade80'
+            },
+            '&::before': {
+              content: '"$ "',
+              color: '#4ade80'
+            }
+          }}
+        >
+          Select Assistant
+        </InputLabel>
         <Select
           labelId="assistant-select-label"
           id="assistant-select"
@@ -48,23 +70,28 @@ const AssistantSelector = () => {
               sx: {
                 borderRadius: 3,
                 mt: 1,
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-                border: '1px solid rgba(102, 126, 234, 0.1)',
-                background: 'rgba(255, 255, 255, 0.95)',
-                backdropFilter: 'blur(10px)',
+                boxShadow: '0 0 40px rgba(74, 222, 128, 0.15)',
+                border: '1px solid rgba(74, 222, 128, 0.2)',
+                background: 'rgba(17, 24, 39, 0.95)',
+                backdropFilter: 'blur(20px)',
                 '& .MuiMenuItem-root': {
+                  fontFamily: '"JetBrains Mono", monospace',
+                  fontSize: '0.85rem',
                   borderRadius: 2,
                   mx: 1,
                   my: 0.5,
+                  color: '#ffffff',
                   transition: 'all 0.2s ease-in-out',
                   '&:hover': {
-                    background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
+                    background: 'rgba(74, 222, 128, 0.15)',
+                    borderLeft: '2px solid #4ade80',
                     transform: 'translateX(4px)'
                   },
                   '&.Mui-selected': {
-                    background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%)',
+                    background: 'rgba(74, 222, 128, 0.2)',
+                    borderLeft: '2px solid #4ade80',
                     '&:hover': {
-                      background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%)'
+                      background: 'rgba(74, 222, 128, 0.25)'
                     }
                   }
                 }
@@ -73,31 +100,61 @@ const AssistantSelector = () => {
           }}
           sx={{
             borderRadius: 3,
-            background: 'rgba(255, 255, 255, 0.8)',
+            fontFamily: '"JetBrains Mono", monospace',
+            fontSize: '0.9rem',
+            background: 'rgba(0, 0, 0, 0.3)',
+            color: '#ffffff',
             '& .MuiOutlinedInput-notchedOutline': {
-              borderColor: 'rgba(102, 126, 234, 0.3)',
-              borderRadius: 3
+              borderColor: 'rgba(74, 222, 128, 0.2)',
+              borderRadius: 3,
+              transition: 'all 0.2s ease'
             },
             '&:hover .MuiOutlinedInput-notchedOutline': {
-              borderColor: 'rgba(102, 126, 234, 0.5)'
+              borderColor: 'rgba(74, 222, 128, 0.4)'
             },
             '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-              borderColor: '#667eea',
-              boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)'
+              borderColor: '#4ade80',
+              borderWidth: 1
             },
             '& .MuiSelect-icon': {
-              color: '#667eea'
+              color: '#4ade80'
             }
           }}
         >
           {assistants.map((assistant) => (
             <MenuItem key={assistant.id} value={assistant.id}>
               <Box>
-                <Typography variant="body1" component="div">
+                <Typography
+                  variant="body1"
+                  component="div"
+                  sx={{
+                    fontFamily: '"JetBrains Mono", monospace',
+                    fontSize: '0.9rem',
+                    color: '#ffffff',
+                    '&::before': {
+                      content: '"> "',
+                      color: '#4ade80'
+                    }
+                  }}
+                >
                   {assistant.name}
                 </Typography>
                 {assistant.description && (
-                  <Typography variant="body2" color="text.secondary" component="div">
+                  <Typography
+                    variant="body2"
+                    component="div"
+                    sx={{
+                      fontFamily: '"JetBrains Mono", monospace',
+                      fontSize: '0.7rem',
+                      color: 'rgba(156, 163, 175, 0.7)',
+                      mt: 0.5,
+                      '&::before': {
+                        content: '"// "',
+                        color: '#60a5fa',
+                        opacity: 0.6
+                      }
+                    }}
+                  >
                     {assistant.description}
                   </Typography>
                 )}
@@ -106,46 +163,76 @@ const AssistantSelector = () => {
           ))}
         </Select>
       </FormControl>
-      
+
       {currentAssistant && (
-        <Box sx={{ 
-          mt: { xs: 1, sm: 2 }, 
-          display: 'flex', 
-          flexWrap: 'wrap', 
+        <Box sx={{
+          mt: { xs: 1, sm: 2 },
+          display: 'flex',
+          flexWrap: 'wrap',
           gap: { xs: 0.5, sm: 1 },
           justifyContent: { xs: 'flex-start', sm: 'flex-start' }
         }}>
-          <Chip 
-            label={`Temperature: ${currentAssistant.temperature}`} 
-            size="small" 
-            variant="outlined" 
+          <Chip
+            label={`temp: ${currentAssistant.temperature}`}
+            size="small"
+            variant="outlined"
             sx={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
-              border: 'none',
-              fontWeight: 500
+              fontFamily: '"JetBrains Mono", monospace',
+              fontSize: '0.7rem',
+              background: 'rgba(74, 222, 128, 0.15)',
+              color: '#4ade80',
+              border: '1px solid rgba(74, 222, 128, 0.3)',
+              fontWeight: 500,
+              '&::before': {
+                content: '"["',
+                marginRight: '2px'
+              },
+              '&::after': {
+                content: '"]"',
+                marginLeft: '2px'
+              }
             }}
           />
-          <Chip 
-            label={`Max Tokens: ${currentAssistant.max_tokens}`} 
-            size="small" 
-            variant="outlined" 
+          <Chip
+            label={`tokens: ${currentAssistant.max_tokens}`}
+            size="small"
+            variant="outlined"
             sx={{
-              background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-              color: 'white',
-              border: 'none',
-              fontWeight: 500
+              fontFamily: '"JetBrains Mono", monospace',
+              fontSize: '0.7rem',
+              background: 'rgba(96, 165, 250, 0.15)',
+              color: '#60a5fa',
+              border: '1px solid rgba(96, 165, 250, 0.3)',
+              fontWeight: 500,
+              '&::before': {
+                content: '"["',
+                marginRight: '2px'
+              },
+              '&::after': {
+                content: '"]"',
+                marginLeft: '2px'
+              }
             }}
           />
-          <Chip 
-            label={currentAssistant.document_collection || 'default'} 
-            size="small" 
-            variant="outlined" 
+          <Chip
+            label={currentAssistant.document_collection || 'default'}
+            size="small"
+            variant="outlined"
             sx={{
-              background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-              color: 'white',
-              border: 'none',
-              fontWeight: 500
+              fontFamily: '"JetBrains Mono", monospace',
+              fontSize: '0.7rem',
+              background: 'rgba(156, 163, 175, 0.15)',
+              color: 'rgba(156, 163, 175, 0.9)',
+              border: '1px solid rgba(156, 163, 175, 0.3)',
+              fontWeight: 500,
+              '&::before': {
+                content: '"["',
+                marginRight: '2px'
+              },
+              '&::after': {
+                content: '"]"',
+                marginLeft: '2px'
+              }
             }}
           />
         </Box>

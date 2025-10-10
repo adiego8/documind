@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Box,
@@ -26,6 +26,8 @@ import AssistantManagement from './AssistantManagement';
 import AdminCodeManagement from './AdminCodeManagement';
 import ConversationMonitoring from './ConversationMonitoring';
 import UserManagement from './UserManagement';
+import APIKeyManagement from './APIKeyManagement';
+import ProjectManagement from './ProjectManagement';
 
 function TabPanel({ children, value, index, ...other }) {
   return (
@@ -49,7 +51,7 @@ const AdminDashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { error } = useSelector((state) => state.assistant);
-  
+
   const [tabValue, setTabValue] = useState(0);
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
 
@@ -76,31 +78,26 @@ const AdminDashboard = () => {
 
 
   return (
-    <Box sx={{ 
-      width: '100%', 
+    <Box sx={{
+      width: '100%',
       p: { xs: 1, sm: 2 },
-      background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
       minHeight: '100vh'
     }}>
       {/* Header */}
-      <Paper 
-        elevation={8} 
-        sx={{ 
-          p: { xs: 2, sm: 3 }, 
-          mb: 2,
-          borderRadius: 3,
-          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-          border: '1px solid rgba(255, 255, 255, 0.2)'
+      <Paper
+        sx={{
+          p: { xs: 2, sm: 3 },
+          mb: 2
         }}
       >
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
           alignItems: { xs: 'flex-start', sm: 'center' },
           flexDirection: { xs: 'column', sm: 'row' },
           gap: { xs: 2, sm: 0 }
         }}>
-          <Typography 
+          <Typography
             variant="h4"
             component="h1"
             sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}
@@ -112,20 +109,21 @@ const AdminDashboard = () => {
             startIcon={<ChatIcon />}
             onClick={() => navigate('/chat')}
             size="medium"
-            sx={{ 
-              alignSelf: { xs: 'flex-start', sm: 'auto' },
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              borderRadius: 2,
-              px: 3,
-              py: 1,
-              boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
-              '&:hover': {
-                background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
-                boxShadow: '0 6px 20px rgba(102, 126, 234, 0.6)',
-                transform: 'translateY(-1px)'
-              },
-              transition: 'all 0.2s ease-in-out'
-            }}
+          // sx={{
+          //   alignSelf: { xs: 'flex-start', sm: 'auto' },
+          //   border: '1px solid #4ade80',
+          //   color: '#4ade80',
+          //   fontFamily: '"JetBrains Mono", monospace',
+          //   borderRadius: 2,
+          //   px: 3,
+          //   py: 1,
+          //   transition: 'all 0.3s ease-in-out',
+          //   '&:hover': {
+          //     background: '#4ade80',
+          //     color: '#000000',
+          //     transform: 'translateY(-1px)'
+          //   }
+          // }}
           >
             Go to Chat
           </Button>
@@ -139,17 +137,13 @@ const AdminDashboard = () => {
       )}
 
       {/* Tabs */}
-      <Paper 
-        elevation={8}
+      <Paper
         sx={{
-          borderRadius: 3,
-          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
           overflow: 'hidden'
         }}
       >
-        <Tabs 
-          value={tabValue} 
+        <Tabs
+          value={tabValue}
           onChange={handleTabChange}
           variant="scrollable"
           scrollButtons="auto"
@@ -194,6 +188,8 @@ const AdminDashboard = () => {
           <Tab label="Registration Codes" />
           <Tab label="Conversations" />
           <Tab label="Users" />
+          <Tab label="API Keys" />
+          <Tab label="Projects" />
         </Tabs>
 
         {/* Assistants Management Tab */}
@@ -216,6 +212,15 @@ const AdminDashboard = () => {
           <UserManagement />
         </TabPanel>
 
+        {/* API Keys Tab */}
+        <TabPanel value={tabValue} index={4}>
+          <APIKeyManagement />
+        </TabPanel>
+
+        {/* Projects Tab */}
+        <TabPanel value={tabValue} index={5}>
+          <ProjectManagement />
+        </TabPanel>
 
       </Paper>
 
@@ -227,12 +232,12 @@ const AdminDashboard = () => {
         <DialogTitle>Clear All Documents</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to clear all documents from the database? 
+            Are you sure you want to clear all documents from the database?
             This action cannot be undone.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ p: 3, gap: 2 }}>
-          <Button 
+          <Button
             onClick={() => setClearDialogOpen(false)}
             sx={{
               borderRadius: 2,
@@ -250,7 +255,7 @@ const AdminDashboard = () => {
           >
             Cancel
           </Button>
-          <Button 
+          <Button
             onClick={handleClearDocuments}
             variant="contained"
             sx={{

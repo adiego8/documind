@@ -319,7 +319,7 @@ Examples:
     python provisioner.py --database-url "postgresql://user:pass@host:port/dbname"
     
     # Neon database example:
-    python provisioner.py --database-url "postgresql://neondb_owner:password@123-test.c-2.us-east-1.aws.neon.tech/documind?sslmode=require&channel_binding=require"
+    python provisioner.py --database-url "postgresql://neondb_owner:password@123-test.c-2.us-east-1.aws.neon.tech/Persona?sslmode=require&channel_binding=require"
     
     # Dry run:
     python provisioner.py --database-url "postgresql://user:pass@host:port/dbname" --dry-run

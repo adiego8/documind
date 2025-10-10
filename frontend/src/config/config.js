@@ -1,11 +1,11 @@
 // =================================
-// DOCUMIND Frontend Configuration
+// Persona Frontend Configuration
 // =================================
 
 // Security: Validate API URL to prevent injection
 const validateApiUrl = (url) => {
   if (!url) return 'http://localhost:8080';
-  
+
   // Only allow http/https protocols
   const allowedProtocols = ['http:', 'https:'];
   try {
@@ -23,7 +23,7 @@ const validateApiUrl = (url) => {
 
 const config = {
   // Application
-  appName: process.env.REACT_APP_NAME || 'DOCUMIND',
+  appName: process.env.REACT_APP_NAME || 'Persona',
   appDescription: process.env.REACT_APP_DESCRIPTION || 'AI-powered document assistant platform',
   appVersion: process.env.REACT_APP_VERSION || '1.0.0',
 

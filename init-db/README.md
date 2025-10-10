@@ -1,6 +1,6 @@
 # Database Provisioner
 
-This directory contains the PostgreSQL database provisioner for the DOCUMIND application. The provisioner automatically executes SQL migration files in the correct order to set up the database schema.
+This directory contains the PostgreSQL database provisioner for the Persona application. The provisioner automatically executes SQL migration files in the correct order to set up the database schema.
 
 ## Files
 
@@ -61,7 +61,7 @@ python provisioner.py --verbose
 For a Neon PostgreSQL database:
 
 ```bash
-export DATABASE_URL="postgresql://neondb_owner:password@123-test.c-2.us-east-1.aws.neon.tech/documind?sslmode=require&channel_binding=require"
+export DATABASE_URL="postgresql://neondb_owner:password@123-test.c-2.us-east-1.aws.neon.tech/Persona?sslmode=require&channel_binding=require"
 python provisioner.py
 ```
 
@@ -70,7 +70,7 @@ Or using individual variables:
 ```bash
 export DB_HOST="123-test.c-2.us-east-1.aws.neon.tech"
 export DB_PORT="5432"
-export DB_NAME="documind"
+export DB_NAME="Persona"
 export DB_USER="neondb_owner"
 export DB_PASSWORD="password"
 python provisioner.py

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -33,10 +33,10 @@ import {
   ExpandLess as ExpandLessIcon,
 } from '@mui/icons-material';
 import { useSelector, useDispatch } from 'react-redux';
-import { 
-  getAssistants, 
-  createAssistant, 
-  updateAssistant, 
+import {
+  getAssistants,
+  createAssistant,
+  updateAssistant,
   deleteAssistant,
   clearError,
   uploadDocumentsToAssistant,
@@ -84,7 +84,7 @@ const AssistantManagement = () => {
           }
         }
       );
-      
+
       setLlmConfigurations(response.data.predefined);
       setDefaultConfig(response.data.default);
     } catch (error) {
@@ -152,8 +152,8 @@ const AssistantManagement = () => {
   };
 
   const handleInputChange = (field) => (event) => {
-    const value = field === 'temperature' || field === 'max_tokens' 
-      ? parseFloat(event.target.value) || 0 
+    const value = field === 'temperature' || field === 'max_tokens'
+      ? parseFloat(event.target.value) || 0
       : event.target.value;
     setFormData(prev => ({
       ...prev,
@@ -209,7 +209,7 @@ const AssistantManagement = () => {
       'Are you sure you want to delete this assistant? This action cannot be undone.',
       'Delete Assistant'
     );
-    
+
     if (confirmed) {
       try {
         await dispatch(deleteAssistant(assistantId)).unwrap();
@@ -249,7 +249,7 @@ const AssistantManagement = () => {
       'Are you sure you want to clear all documents for this assistant? This action cannot be undone.',
       'Clear All Documents'
     );
-    
+
     if (confirmed) {
       try {
         await dispatch(clearAssistantDocuments(assistantId)).unwrap();
@@ -264,7 +264,7 @@ const AssistantManagement = () => {
 
   const handleToggleDocuments = async (assistantId) => {
     const isExpanded = expandedDocuments[assistantId];
-    
+
     if (!isExpanded) {
       // Load documents when expanding
       try {
@@ -273,7 +273,7 @@ const AssistantManagement = () => {
         console.error('Failed to load documents:', error);
       }
     }
-    
+
     setExpandedDocuments({
       ...expandedDocuments,
       [assistantId]: !isExpanded
@@ -285,7 +285,7 @@ const AssistantManagement = () => {
       `Are you sure you want to delete "${filename}"? This action cannot be undone.`,
       'Delete Document'
     );
-    
+
     if (confirmed) {
       try {
         await dispatch(deleteAssistantDocument({ assistantId, documentId })).unwrap();
@@ -304,9 +304,10 @@ const AssistantManagement = () => {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" component="h1">
+    <Box sx={{ width: '100%' }}>
+      {/* Header */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, pt: 2, px: 2 }}>
+        <Typography variant="h5" component="h2" sx={{ fontWeight: 600 }}>
           Assistant Management
         </Typography>
         <Button
@@ -315,20 +316,15 @@ const AssistantManagement = () => {
           onClick={() => handleOpenDialog()}
           sx={{
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            borderRadius: 3,
+            borderRadius: 2,
             px: 3,
-            py: 1.5,
-            fontSize: { xs: '0.875rem', sm: '1rem' },
-            fontWeight: 600,
-            boxShadow: '0 6px 20px rgba(102, 126, 234, 0.4)',
+            py: 1,
             textTransform: 'none',
+            boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
             '&:hover': {
               background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
-              boxShadow: '0 8px 25px rgba(102, 126, 234, 0.6)',
-              transform: 'translateY(-2px) scale(1.02)'
-            },
-            '&:active': {
-              transform: 'translateY(-1px) scale(0.98)'
+              boxShadow: '0 6px 20px rgba(102, 126, 234, 0.6)',
+              transform: 'translateY(-1px)'
             },
             transition: 'all 0.2s ease-in-out'
           }}
@@ -343,301 +339,323 @@ const AssistantManagement = () => {
       </Box>
 
       {error && (
-        <Alert 
-          severity="error" 
+        <Alert
+          severity="error"
           onClose={() => dispatch(clearError())}
-          sx={{ mb: 3 }}
+          sx={{
+            mb: 3,
+            borderRadius: 3,
+            border: '1px solid rgba(244, 67, 54, 0.2)',
+            boxShadow: '0 4px 20px rgba(244, 67, 54, 0.1)'
+          }}
         >
           {error}
         </Alert>
       )}
 
-      <Grid container spacing={3}>
-        {assistants.map((assistant) => (
-          <Grid size={{ xs: 12, md: 6, lg: 4 }} key={assistant.id}>
-            <Card sx={{ 
-              height: '100%', 
-              display: 'flex', 
-              flexDirection: 'column',
-              borderRadius: 3,
-              background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-              border: '1px solid rgba(102, 126, 234, 0.1)',
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-              transition: 'all 0.3s ease-in-out',
-              '&:hover': {
-                transform: 'translateY(-4px)',
-                boxShadow: '0 8px 25px rgba(102, 126, 234, 0.15)'
-              }
-            }}>
-              <CardContent sx={{ flex: 1 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <BotIcon sx={{ mr: 1, color: 'primary.main' }} />
-                  <Typography variant="h6" component="h2">
-                    {assistant.name}
+      <Box sx={{ px: 2 }}>
+        <Grid container spacing={3}>
+          {assistants.map((assistant) => (
+            <Grid item xs={12} md={6} lg={4} key={assistant.id}>
+              <Card sx={{
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                borderRadius: 3,
+                background: 'inherit',
+                border: '1px solid rgba(102, 126, 234, 0.1)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                transition: 'all 0.3s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 12px 40px rgba(102, 126, 234, 0.15)'
+                }
+              }}>
+                <CardContent sx={{ flex: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <BotIcon sx={{ mr: 1, color: 'primary.main' }} />
+                    <Typography variant="h6" component="h2">
+                      {assistant.name}
+                    </Typography>
+                  </Box>
+
+                  {assistant.description && (
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      {assistant.description}
+                    </Typography>
+                  )}
+
+                  <Typography variant="body2" sx={{ mb: 2 }}>
+                    <strong>Instructions:</strong> {assistant.initial_context.substring(0, 100)}...
                   </Typography>
-                </Box>
-                
-                {assistant.description && (
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    {assistant.description}
+
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+                    <Chip
+                      label={`Temp: ${assistant.temperature}`}
+                      size="small"
+                      sx={{
+                        border: '1px solid #4ade80',
+                        color: '#4ade80',
+                        fontFamily: '"JetBrains Mono", monospace',
+                        color: 'white',
+                        border: 'none',
+                        fontWeight: 500
+                      }}
+                    />
+                    <Chip
+                      label={`Tokens: ${assistant.max_tokens}`}
+                      size="small"
+                      sx={{
+                        border: '1px solid #ff0066',
+                        color: '#ff0066',
+                        fontFamily: '"JetBrains Mono", monospace',
+                        color: 'white',
+                        border: 'none',
+                        fontWeight: 500
+                      }}
+                    />
+                    <Chip
+                      label={assistant.document_collection}
+                      size="small"
+                      sx={{
+                        border: '1px solid #60a5fa',
+                        color: '#60a5fa',
+                        fontFamily: '"JetBrains Mono", monospace',
+                        color: 'white',
+                        border: 'none',
+                        fontWeight: 500
+                      }}
+                    />
+                  </Box>
+
+                  <Typography variant="caption" color="text.secondary">
+                    Created: {formatTimestamp(assistant.created_at)}
                   </Typography>
-                )}
 
-                <Typography variant="body2" sx={{ mb: 2 }}>
-                  <strong>Instructions:</strong> {assistant.initial_context.substring(0, 100)}...
-                </Typography>
-
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-                  <Chip 
-                    label={`Temp: ${assistant.temperature}`} 
-                    size="small" 
-                    sx={{
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      color: 'white',
-                      border: 'none',
-                      fontWeight: 500
-                    }}
-                  />
-                  <Chip 
-                    label={`Tokens: ${assistant.max_tokens}`} 
-                    size="small" 
-                    sx={{
-                      background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                      color: 'white',
-                      border: 'none',
-                      fontWeight: 500
-                    }}
-                  />
-                  <Chip 
-                    label={assistant.document_collection} 
-                    size="small" 
-                    sx={{
-                      background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-                      color: 'white',
-                      border: 'none',
-                      fontWeight: 500
-                    }}
-                  />
-                </Box>
-
-                <Typography variant="caption" color="text.secondary">
-                  Created: {formatTimestamp(assistant.created_at)}
-                </Typography>
-                
-                {/* Document Management Section */}
-                <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <FileIcon sx={{ mr: 1, fontSize: 16 }} />
-                      <Typography variant="subtitle2">
-                        Files: {documentStats[assistant.id]?.file_count || 0}
-                      </Typography>
-                      {documentStats[assistant.id]?.total_chunks > 0 && (
-                        <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-                          ({documentStats[assistant.id].total_chunks} chunks)
+                  {/* Document Management Section */}
+                  <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <FileIcon sx={{ mr: 1, fontSize: 16 }} />
+                        <Typography variant="subtitle2">
+                          Files: {documentStats[assistant.id]?.file_count || 0}
                         </Typography>
+                        {documentStats[assistant.id]?.total_chunks > 0 && (
+                          <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                            ({documentStats[assistant.id].total_chunks} chunks)
+                          </Typography>
+                        )}
+                      </Box>
+                      {documentStats[assistant.id]?.file_count > 0 && (
+                        <IconButton
+                          size="small"
+                          onClick={() => handleToggleDocuments(assistant.id)}
+                        >
+                          {expandedDocuments[assistant.id] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                        </IconButton>
                       )}
                     </Box>
-                    {documentStats[assistant.id]?.file_count > 0 && (
-                      <IconButton 
-                        size="small" 
-                        onClick={() => handleToggleDocuments(assistant.id)}
-                      >
-                        {expandedDocuments[assistant.id] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                      </IconButton>
-                    )}
-                  </Box>
-                  
-                  <input
-                    type="file"
-                    multiple
-                    accept=".pdf,.docx,.txt"
-                    style={{ display: 'none' }}
-                    id={`file-upload-${assistant.id}`}
-                    onChange={handleFileSelect(assistant.id)}
-                  />
-                  
-                  {selectedFiles[assistant.id] && selectedFiles[assistant.id].length > 0 && (
-                    <Box sx={{ mb: 1 }}>
-                      <Typography variant="caption" color="text.secondary">
-                        {selectedFiles[assistant.id].length} file(s) selected
-                      </Typography>
-                    </Box>
-                  )}
-                  
-                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                    <label htmlFor={`file-upload-${assistant.id}`}>
-                      <Button
-                        component="span"
-                        size="small"
-                        startIcon={<UploadIcon />}
-                        variant="outlined"
-                        sx={{ 
-                          fontSize: '0.75rem',
-                          borderRadius: 2,
-                          color: '#667eea',
-                          border: '1px solid rgba(102, 126, 234, 0.3)',
-                          '&:hover': {
-                            background: 'rgba(102, 126, 234, 0.08)',
-                            border: '1px solid rgba(102, 126, 234, 0.5)',
-                            transform: 'translateY(-1px)'
-                          },
-                          transition: 'all 0.2s ease-in-out'
-                        }}
-                      >
-                        Select Files
-                      </Button>
-                    </label>
-                    
+
+                    <input
+                      type="file"
+                      multiple
+                      accept=".pdf,.docx,.txt"
+                      style={{ display: 'none' }}
+                      id={`file-upload-${assistant.id}`}
+                      onChange={handleFileSelect(assistant.id)}
+                    />
+
                     {selectedFiles[assistant.id] && selectedFiles[assistant.id].length > 0 && (
-                      <Button
-                        size="small"
-                        variant="contained"
-                        onClick={() => handleUploadDocuments(assistant.id)}
-                        disabled={isUploading}
-                        sx={{ 
-                          fontSize: '0.75rem',
-                          background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-                          borderRadius: 2,
-                          boxShadow: '0 2px 8px rgba(79, 172, 254, 0.3)',
-                          '&:hover': {
-                            background: 'linear-gradient(135deg, #3d8bfe 0%, #00d4fe 100%)',
-                            boxShadow: '0 4px 12px rgba(79, 172, 254, 0.4)',
-                            transform: 'translateY(-1px)'
-                          },
-                          '&:disabled': {
-                            background: 'rgba(0, 0, 0, 0.12)'
-                          },
-                          transition: 'all 0.2s ease-in-out'
-                        }}
-                      >
-                        Upload
-                      </Button>
-                    )}
-                    
-                    {documentStats[assistant.id]?.file_count > 0 && (
-                      <Button
-                        size="small"
-                        startIcon={<ClearIcon />}
-                        onClick={() => handleClearDocuments(assistant.id)}
-                        variant="outlined"
-                        sx={{ 
-                          fontSize: '0.75rem',
-                          borderRadius: 2,
-                          color: '#f5576c',
-                          border: '1px solid rgba(245, 87, 108, 0.3)',
-                          '&:hover': {
-                            background: 'rgba(245, 87, 108, 0.08)',
-                            border: '1px solid rgba(245, 87, 108, 0.5)',
-                            transform: 'translateY(-1px)'
-                          },
-                          transition: 'all 0.2s ease-in-out'
-                        }}
-                      >
-                        Clear
-                      </Button>
-                    )}
-                  </Box>
-                  
-                  {/* Expanded Documents List */}
-                  {expandedDocuments[assistant.id] && documents[assistant.id] && (
-                    <Box sx={{ mt: 2 }}>
-                      {documents[assistant.id].length === 0 ? (
+                      <Box sx={{ mb: 1 }}>
                         <Typography variant="caption" color="text.secondary">
-                          No documents uploaded yet
+                          {selectedFiles[assistant.id].length} file(s) selected
                         </Typography>
-                      ) : (
-                        documents[assistant.id].map((doc) => (
-                          <Box 
-                            key={doc.id} 
-                            sx={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              justifyContent: 'space-between',
-                              py: 0.5,
-                              px: 1,
-                              mb: 0.5,
-                              backgroundColor: 'grey.50',
-                              borderRadius: 1
-                            }}
-                          >
-                            <Box sx={{ flex: 1, minWidth: 0 }}>
-                              <Typography 
-                                variant="caption" 
-                                sx={{ 
-                                  display: 'block',
-                                  fontWeight: 'medium',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap'
-                                }}
-                              >
-                                {doc.filename}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {formatFileSize(doc.file_size)} • {doc.chunk_count} chunks
-                              </Typography>
-                            </Box>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleDeleteDocument(assistant.id, doc.id, doc.filename)}
-                              disabled={isDeletingDocument}
-                              color="error"
-                              sx={{ ml: 1 }}
-                            >
-                              <DeleteIcon fontSize="small" />
-                            </IconButton>
-                          </Box>
-                        ))
+                      </Box>
+                    )}
+
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                      <label htmlFor={`file-upload-${assistant.id}`}>
+                        <Button
+                          component="span"
+                          size="small"
+                          startIcon={<UploadIcon />}
+                          variant="outlined"
+                          sx={{
+                            fontSize: '0.75rem',
+                            borderRadius: 2,
+                            color: '#667eea',
+                            border: '1px solid rgba(102, 126, 234, 0.3)',
+                            '&:hover': {
+                              background: 'rgba(102, 126, 234, 0.08)',
+                              border: '1px solid rgba(102, 126, 234, 0.5)',
+                              transform: 'translateY(-1px)'
+                            },
+                            transition: 'all 0.2s ease-in-out'
+                          }}
+                        >
+                          Select Files
+                        </Button>
+                      </label>
+
+                      {selectedFiles[assistant.id] && selectedFiles[assistant.id].length > 0 && (
+                        <Button
+                          size="small"
+                          variant="contained"
+                          onClick={() => handleUploadDocuments(assistant.id)}
+                          disabled={isUploading}
+                          sx={{
+                            fontSize: '0.75rem',
+                            border: '1px solid #60a5fa',
+                            color: '#60a5fa',
+                            fontFamily: '"JetBrains Mono", monospace',
+                            borderRadius: 2,
+                            boxShadow: '0 2px 8px rgba(79, 172, 254, 0.3)',
+                            '&:hover': {
+                              background: '#60a5fa',
+                              color: '#000000',
+                              boxShadow: '0 4px 12px rgba(79, 172, 254, 0.4)',
+                              transform: 'translateY(-1px)'
+                            },
+                            '&:disabled': {
+                              background: 'rgba(0, 0, 0, 0.12)'
+                            },
+                            transition: 'all 0.2s ease-in-out'
+                          }}
+                        >
+                          Upload
+                        </Button>
+                      )}
+
+                      {documentStats[assistant.id]?.file_count > 0 && (
+                        <Button
+                          size="small"
+                          startIcon={<ClearIcon />}
+                          onClick={() => handleClearDocuments(assistant.id)}
+                          variant="outlined"
+                          sx={{
+                            fontSize: '0.75rem',
+                            borderRadius: 2,
+                            color: '#f5576c',
+                            border: '1px solid rgba(245, 87, 108, 0.3)',
+                            '&:hover': {
+                              background: 'rgba(245, 87, 108, 0.08)',
+                              border: '1px solid rgba(245, 87, 108, 0.5)',
+                              transform: 'translateY(-1px)'
+                            },
+                            transition: 'all 0.2s ease-in-out'
+                          }}
+                        >
+                          Clear
+                        </Button>
                       )}
                     </Box>
-                  )}
-                </Box>
-              </CardContent>
 
-              <CardActions sx={{ p: 2, gap: 1, justifyContent: 'flex-end' }}>
-                <IconButton 
-                  size="small" 
-                  onClick={() => handleOpenDialog(assistant)}
-                  sx={{
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    color: 'white',
-                    borderRadius: 2,
-                    p: 1,
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
-                      transform: 'translateY(-1px) scale(1.05)'
-                    },
-                    transition: 'all 0.2s ease-in-out'
-                  }}
-                >
-                  <EditIcon fontSize="small" />
-                </IconButton>
-                <IconButton 
-                  size="small" 
-                  onClick={() => handleDelete(assistant.id)}
-                  sx={{
-                    background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                    color: 'white',
-                    borderRadius: 2,
-                    p: 1,
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #e078f0 0%, #e73c5e 100%)',
-                      transform: 'translateY(-1px) scale(1.05)'
-                    },
-                    transition: 'all 0.2s ease-in-out'
-                  }}
-                >
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
-              </CardActions>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+                    {/* Expanded Documents List */}
+                    {expandedDocuments[assistant.id] && documents[assistant.id] && (
+                      <Box sx={{ mt: 2 }}>
+                        {documents[assistant.id].length === 0 ? (
+                          <Typography variant="caption" color="text.secondary">
+                            No documents uploaded yet
+                          </Typography>
+                        ) : (
+                          documents[assistant.id].map((doc) => (
+                            <Box
+                              key={doc.id}
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                py: 0.5,
+                                px: 1,
+                                mb: 0.5,
+                                backgroundColor: 'grey.50',
+                                borderRadius: 1
+                              }}
+                            >
+                              <Box sx={{ flex: 1, minWidth: 0 }}>
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    display: 'block',
+                                    fontWeight: 'medium',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap'
+                                  }}
+                                >
+                                  {doc.filename}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  {formatFileSize(doc.file_size)} • {doc.chunk_count} chunks
+                                </Typography>
+                              </Box>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleDeleteDocument(assistant.id, doc.id, doc.filename)}
+                                disabled={isDeletingDocument}
+                                color="error"
+                                sx={{ ml: 1 }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Box>
+                          ))
+                        )}
+                      </Box>
+                    )}
+                  </Box>
+                </CardContent>
+
+                <CardActions sx={{ p: 2, gap: 1, justifyContent: 'flex-end' }}>
+                  <IconButton
+                    size="small"
+                    onClick={() => handleOpenDialog(assistant)}
+                    sx={{
+                      border: '1px solid #4ade80',
+                      color: '#4ade80',
+                      fontFamily: '"JetBrains Mono", monospace',
+                      color: 'white',
+                      borderRadius: 2,
+                      p: 1,
+                      '&:hover': {
+                        background: '#4ade80',
+                        color: '#000000',
+                        transform: 'translateY(-1px) scale(1.05)'
+                      },
+                      transition: 'all 0.2s ease-in-out'
+                    }}
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    onClick={() => handleDelete(assistant.id)}
+                    sx={{
+                      border: '1px solid #ff0066',
+                      color: '#ff0066',
+                      fontFamily: '"JetBrains Mono", monospace',
+                      color: 'white',
+                      borderRadius: 2,
+                      p: 1,
+                      '&:hover': {
+                        background: '#ff0066',
+                        color: '#000000',
+                        transform: 'translateY(-1px) scale(1.05)'
+                      },
+                      transition: 'all 0.2s ease-in-out'
+                    }}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </CardActions>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
 
       {assistants.length === 0 && !isLoading && (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
+        <Box sx={{ textAlign: 'center', py: 8, px: 2 }}>
           <BotIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
             No assistants yet
@@ -681,81 +699,44 @@ const AssistantManagement = () => {
       )}
 
       {/* Create/Edit Dialog */}
-      <Dialog 
-        open={dialogOpen} 
+      <Dialog
+        open={dialogOpen}
         onClose={handleCloseDialog}
         maxWidth="md"
         fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+            border: '1px solid rgba(102, 126, 234, 0.1)'
+          }
+        }}
       >
-        <DialogTitle>
+        <DialogTitle sx={{
+          borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+          fontWeight: 600
+        }}>
           {editingAssistant ? 'Edit Assistant' : 'Create New Assistant'}
         </DialogTitle>
         <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 2 }}>
             <TextField
-              autoFocus
-              label="Name"
               fullWidth
+              label="Assistant Name"
               value={formData.name}
               onChange={handleInputChange('name')}
               required
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 3,
-                  background: 'rgba(255, 255, 255, 0.9)',
-                  backdropFilter: 'blur(10px)',
-                  '& fieldset': {
-                    borderColor: 'rgba(102, 126, 234, 0.3)'
-                  },
-                  '&:hover fieldset': {
-                    borderColor: 'rgba(102, 126, 234, 0.5)'
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#667eea',
-                    boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)'
-                  }
-                },
-                '& .MuiInputLabel-root': {
-                  color: '#667eea',
-                  '&.Mui-focused': {
-                    color: '#667eea'
-                  }
-                }
-              }}
             />
-            
+
             <TextField
-              label="Description"
               fullWidth
+              label="Description"
               value={formData.description}
               onChange={handleInputChange('description')}
               multiline
               rows={2}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 3,
-                  background: 'rgba(255, 255, 255, 0.9)',
-                  backdropFilter: 'blur(10px)',
-                  '& fieldset': {
-                    borderColor: 'rgba(102, 126, 234, 0.3)'
-                  },
-                  '&:hover fieldset': {
-                    borderColor: 'rgba(102, 126, 234, 0.5)'
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#667eea',
-                    boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)'
-                  }
-                },
-                '& .MuiInputLabel-root': {
-                  color: '#667eea',
-                  '&.Mui-focused': {
-                    color: '#667eea'
-                  }
-                }
-              }}
             />
-            
+
             <TextField
               label="System Instructions"
               fullWidth
@@ -765,63 +746,9 @@ const AssistantManagement = () => {
               rows={4}
               required
               helperText="Define the assistant's personality, expertise, and behavior"
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 3,
-                  background: 'rgba(255, 255, 255, 0.9)',
-                  backdropFilter: 'blur(10px)',
-                  '& fieldset': {
-                    borderColor: 'rgba(102, 126, 234, 0.3)'
-                  },
-                  '&:hover fieldset': {
-                    borderColor: 'rgba(102, 126, 234, 0.5)'
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#667eea',
-                    boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)'
-                  }
-                },
-                '& .MuiInputLabel-root': {
-                  color: '#667eea',
-                  '&.Mui-focused': {
-                    color: '#667eea'
-                  }
-                },
-                '& .MuiFormHelperText-root': {
-                  color: 'rgba(102, 126, 234, 0.7)'
-                }
-              }}
             />
 
-            <FormControl fullWidth sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 3,
-                background: 'rgba(255, 255, 255, 0.9)',
-                backdropFilter: 'blur(10px)',
-                '& fieldset': {
-                  borderColor: 'rgba(102, 126, 234, 0.3)'
-                },
-                '&:hover fieldset': {
-                  borderColor: 'rgba(102, 126, 234, 0.5)'
-                },
-                '&.Mui-focused fieldset': {
-                  borderColor: '#667eea',
-                  boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)'
-                }
-              },
-              '& .MuiInputLabel-root': {
-                color: '#667eea',
-                '&.Mui-focused': {
-                  color: '#667eea'
-                }
-              },
-              '& .MuiFormHelperText-root': {
-                color: 'rgba(102, 126, 234, 0.7)'
-              },
-              '& .MuiSelect-icon': {
-                color: '#667eea'
-              }
-            }}>
+            <FormControl fullWidth>
               <InputLabel>LLM Configuration Preset</InputLabel>
               <Select
                 value={formData.llm_preset}
@@ -879,38 +806,9 @@ const AssistantManagement = () => {
                 inputProps={{ min: 0, max: 2, step: 0.1 }}
                 helperText="0 = focused, 2 = creative"
                 disabled={formData.llm_preset !== 'custom'}
-                sx={{ 
-                  flex: 1,
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 3,
-                    background: 'rgba(255, 255, 255, 0.9)',
-                    backdropFilter: 'blur(10px)',
-                    '& fieldset': {
-                      borderColor: 'rgba(102, 126, 234, 0.3)'
-                    },
-                    '&:hover fieldset': {
-                      borderColor: 'rgba(102, 126, 234, 0.5)'
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: '#667eea',
-                      boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)'
-                    },
-                    '&.Mui-disabled': {
-                      background: 'rgba(0, 0, 0, 0.02)'
-                    }
-                  },
-                  '& .MuiInputLabel-root': {
-                    color: '#667eea',
-                    '&.Mui-focused': {
-                      color: '#667eea'
-                    }
-                  },
-                  '& .MuiFormHelperText-root': {
-                    color: 'rgba(102, 126, 234, 0.7)'
-                  }
-                }}
+                sx={{ flex: 1 }}
               />
-              
+
               <TextField
                 label="Max Tokens"
                 type="number"
@@ -919,36 +817,7 @@ const AssistantManagement = () => {
                 inputProps={{ min: 100, max: 4000, step: 100 }}
                 helperText="Response length limit"
                 disabled={formData.llm_preset !== 'custom'}
-                sx={{ 
-                  flex: 1,
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 3,
-                    background: 'rgba(255, 255, 255, 0.9)',
-                    backdropFilter: 'blur(10px)',
-                    '& fieldset': {
-                      borderColor: 'rgba(102, 126, 234, 0.3)'
-                    },
-                    '&:hover fieldset': {
-                      borderColor: 'rgba(102, 126, 234, 0.5)'
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: '#667eea',
-                      boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)'
-                    },
-                    '&.Mui-disabled': {
-                      background: 'rgba(0, 0, 0, 0.02)'
-                    }
-                  },
-                  '& .MuiInputLabel-root': {
-                    color: '#667eea',
-                    '&.Mui-focused': {
-                      color: '#667eea'
-                    }
-                  },
-                  '& .MuiFormHelperText-root': {
-                    color: 'rgba(102, 126, 234, 0.7)'
-                  }
-                }}
+                sx={{ flex: 1 }}
               />
             </Box>
 
@@ -958,46 +827,11 @@ const AssistantManagement = () => {
               value={formData.document_collection}
               onChange={handleInputChange('document_collection')}
               helperText="Which document collection this assistant should use"
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 3,
-                  background: 'rgba(255, 255, 255, 0.9)',
-                  backdropFilter: 'blur(10px)',
-                  '& fieldset': {
-                    borderColor: 'rgba(102, 126, 234, 0.3)'
-                  },
-                  '&:hover fieldset': {
-                    borderColor: 'rgba(102, 126, 234, 0.5)'
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#667eea',
-                    boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)'
-                  }
-                },
-                '& .MuiInputLabel-root': {
-                  color: '#667eea',
-                  backgroundColor: 'transparent',
-                  '&.Mui-focused': {
-                    color: '#667eea'
-                  },
-                  '&.MuiInputLabel-shrink': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                    px: 1,
-                    borderRadius: 1
-                  }
-                },
-                '& .MuiFormHelperText-root': {
-                  color: 'rgba(102, 126, 234, 0.7)'
-                }
-              }}
             />
           </Box>
         </DialogContent>
-        <DialogActions sx={{ 
-          p: 3, 
-          gap: 2
-        }}>
-          <Button 
+        <DialogActions sx={{ p: 3, borderTop: '1px solid rgba(0, 0, 0, 0.08)' }}>
+          <Button
             onClick={handleCloseDialog}
             sx={{
               borderRadius: 2,
@@ -1015,7 +849,7 @@ const AssistantManagement = () => {
           >
             Cancel
           </Button>
-          <Button 
+          <Button
             onClick={handleSubmit}
             variant="contained"
             disabled={!formData.name.trim() || !formData.initial_context.trim()}
@@ -1048,7 +882,7 @@ const AssistantManagement = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      
+
       <CustomDialog
         open={dialogState.open}
         onClose={closeDialog}

@@ -232,10 +232,10 @@ TEMPERATURE=0.7
 
 The application uses custom Google Fonts for premium branding:
 
-- **Primary Brand Font**: [Orbitron](https://fonts.google.com/specimen/Orbitron) - A futuristic, tech-focused monospace font used for the DOCUMIND logo and main branding
+- **Primary Brand Font**: [Orbitron](https://fonts.google.com/specimen/Orbitron) - A futuristic, tech-focused monospace font used for the Persona logo and main branding
 - **Supporting Font**: [Space Grotesk](https://fonts.google.com/specimen/Space+Grotesk) - A clean, modern sans-serif font for supporting text and descriptions
 
-### DOCUMIND Logo Styling
+### Persona Logo Styling
 
 #### Login Form
 ```css

@@ -1,8 +1,8 @@
-.PHONY: help install install-backend-deps install-frontend-deps setup run-backend run-frontend run dev clean build test
+.PHONY: help install install-backend-deps install-frontend-deps setup run-backend run-frontend run dev clean build test migrate-db
 
 # Default target
 help: ## Show this help message
-	@echo "DOCUMIND - AI Document Assistant Platform - Available Commands:"
+	@echo "Persona - Backend as a Service - Available Commands:"
 	@echo ""
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
@@ -11,7 +11,7 @@ help: ## Show this help message
 	@echo "  2. make run       - Start both backend and frontend"
 	@echo "  3. Visit http://localhost:3000"
 	@echo ""
-	@echo "🧠 Welcome to DOCUMIND - Your AI Document Assistant!"
+	@echo "🧠 Welcome to Persona - Your AI Document Assistant!"
 
 setup: install ## Install all dependencies (backend + frontend)
 
@@ -43,12 +43,13 @@ run: ## Start both backend and frontend (requires 2 terminals)
 	@echo ""
 	@echo "Or use 'make dev' to see the individual commands"
 
-run-backend: ## Start DOCUMIND API backend server
-	@echo "🔧 Starting DOCUMIND API backend on http://localhost:8080..."
-	source .venv/bin/activate && python3 -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
+run-backend: ## Start Persona API backend server
+	@echo "🔧 Starting Persona API backend on http://localhost:8082..."
+	cp config/backend/.env .env
+	source .venv/bin/activate && python3 -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8082
 
-run-frontend: ## Start DOCUMIND React frontend development server
-	@echo "⚛️  Starting DOCUMIND React frontend on http://localhost:3000..."
+run-frontend: ## Start Persona React frontend development server
+	@echo "⚛️  Starting Persona React frontend on http://localhost:3000..."
 	cp config/frontend/.env frontend/.env
 	cd frontend && npm start
 
@@ -65,8 +66,8 @@ dev: ## Show development commands
 	@echo ""
 	@echo "Access:"
 	@echo "  Frontend: http://localhost:3000"
-	@echo "  Backend:  http://localhost:8080"
-	@echo "  API Docs: http://localhost:8080/docs"
+	@echo "  Backend:  http://localhost:8082"
+	@echo "  API Docs: http://localhost:80822/docs"
 
 build: ## Build frontend for production
 	@echo "🏗️  Building frontend for production..."
@@ -138,6 +139,39 @@ check-env: ## Check if environment is properly configured
 	@test -d .venv && echo "✅ Virtual environment exists" || echo "❌ Virtual environment missing (run: make create-venv)"
 	@test -d frontend/node_modules && echo "✅ Frontend dependencies installed" || echo "❌ Frontend dependencies missing (run: make install-frontend-deps)"
 	@source .venv/bin/activate && python3 -c "import app.main" 2>/dev/null && echo "✅ Backend dependencies installed" || echo "❌ Backend dependencies missing (run: make install-backend-deps)"
+
+migrate-db: ## Run database migrations to apply schema changes
+	@echo "🗃️  Running database migrations..."
+	@if [ -z "$$DATABASE_URL" ]; then \
+		echo "❌ DATABASE_URL environment variable not set"; \
+		echo "💡 Set it by running: export DATABASE_URL=\"your_database_url\""; \
+		echo "💡 Or copy from your .env file: source .env"; \
+		exit 1; \
+	fi
+	@echo "📊 Target database: $$DATABASE_URL"
+	@echo "⚠️  This will apply schema changes to your database."
+	@read -p "Continue? (y/N): " confirm && [ "$$confirm" = "y" ] || [ "$$confirm" = "Y" ]
+	source .venv/bin/activate && python3 init-db/provisioner.py --database-url "$$DATABASE_URL"
+	@echo "✅ Database migration completed!"
+
+migrate-db-force: ## Run database migrations without confirmation (use with caution)
+	@echo "🗃️  Running database migrations (forced)..."
+	@if [ -z "$$DATABASE_URL" ]; then \
+		echo "❌ DATABASE_URL environment variable not set"; \
+		echo "💡 Set it by running: export DATABASE_URL=\"your_database_url\""; \
+		exit 1; \
+	fi
+	source .venv/bin/activate && python3 init-db/provisioner.py --database-url "$$DATABASE_URL" --force
+	@echo "✅ Database migration completed!"
+
+migrate-db-dry-run: ## Show what database migrations would be applied (no changes made)
+	@echo "🔍 Checking database migrations (dry run)..."
+	@if [ -z "$$DATABASE_URL" ]; then \
+		echo "❌ DATABASE_URL environment variable not set"; \
+		echo "💡 Set it by running: export DATABASE_URL=\"your_database_url\""; \
+		exit 1; \
+	fi
+	source .venv/bin/activate && python3 init-db/provisioner.py --database-url "$$DATABASE_URL" --dry-run
 
 logs: ## Show application logs (if running with systemd or docker)
 	@echo "📋 For logs, check your terminal where you ran 'make run-backend' and 'make run-frontend'"

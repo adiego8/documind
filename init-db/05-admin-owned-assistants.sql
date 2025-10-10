@@ -9,13 +9,24 @@ ALTER TABLE assistants ADD COLUMN IF NOT EXISTS admin_code_id UUID REFERENCES ad
 -- Create index for performance
 CREATE INDEX IF NOT EXISTS idx_assistants_admin_code_id ON assistants(admin_code_id);
 
--- Make admin_code_id NOT NULL for fresh database
-ALTER TABLE assistants ALTER COLUMN admin_code_id SET NOT NULL;
+-- Make admin_code_id NOT NULL for fresh database (idempotent)
+DO $$
+BEGIN
+    -- Only set NOT NULL if column exists and is not already NOT NULL
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'assistants' 
+        AND column_name = 'admin_code_id' 
+        AND is_nullable = 'YES'
+    ) THEN
+        ALTER TABLE assistants ALTER COLUMN admin_code_id SET NOT NULL;
+    END IF;
+END $$;
 
 -- Create documents table to track original uploaded files
 -- This separates user-facing files from internal chunks in ChromaDB
 CREATE TABLE IF NOT EXISTS documents (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     assistant_id UUID NOT NULL REFERENCES assistants(id) ON DELETE CASCADE,
     filename VARCHAR(255) NOT NULL,
     file_size INTEGER,
@@ -35,6 +46,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS documents_updated_at_trigger ON documents;
 CREATE TRIGGER documents_updated_at_trigger
     BEFORE UPDATE ON documents
     FOR EACH ROW

@@ -6,7 +6,7 @@
 -- Create admin_codes table for registration codes
 -- Admin codes exist independently and everything else references them
 CREATE TABLE IF NOT EXISTS admin_codes (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     code VARCHAR(50) UNIQUE NOT NULL,
     description TEXT,
     is_active BOOLEAN DEFAULT TRUE,
@@ -21,7 +21,7 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS admin_code_id UUID REFERENCES admin_c
 
 -- Create conversations table to track all conversations
 CREATE TABLE IF NOT EXISTS conversations (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     assistant_id UUID REFERENCES assistants(id) ON DELETE CASCADE,
     title VARCHAR(500),
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS conversations (
 
 -- Create conversation_messages table to track all messages
 CREATE TABLE IF NOT EXISTS conversation_messages (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     conversation_id UUID REFERENCES conversations(id) ON DELETE CASCADE,
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     assistant_id UUID REFERENCES assistants(id) ON DELETE CASCADE,
@@ -50,6 +50,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS admin_codes_updated_at_trigger ON admin_codes;
 CREATE TRIGGER admin_codes_updated_at_trigger
     BEFORE UPDATE ON admin_codes
     FOR EACH ROW
@@ -64,6 +65,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS conversations_updated_at_trigger ON conversations;
 CREATE TRIGGER conversations_updated_at_trigger
     BEFORE UPDATE ON conversations
     FOR EACH ROW

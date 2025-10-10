@@ -71,7 +71,9 @@ class DocumentProcessor:
             
             documents.append({
                 "content": chunk,
-                "metadata": metadata
+                "metadata": metadata,
+                "document_id": document_id_prefix,  # All chunks from same document get same ID
+                "chunk_index": i
             })
         
         return documents

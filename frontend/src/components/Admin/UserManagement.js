@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Paper,
@@ -59,11 +59,11 @@ const UserManagement = () => {
 
   const handleDeleteConfirm = async () => {
     if (!userToDelete) return;
-    
+
     setDeleting(true);
     try {
       await apiClient.delete(`/admin/users/${userToDelete.id}`);
-      
+
       setUsers(users.filter(user => user.id !== userToDelete.id));
       setDeleteDialogOpen(false);
       setUserToDelete(null);
@@ -98,119 +98,159 @@ const UserManagement = () => {
   }
 
   return (
-    <Box>
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h6" component="h2">
+    <Box sx={{ width: '100%' }}>
+      {/* Header */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, pt: 2, px: 2 }}>
+        <Typography variant="h5" component="h2" sx={{ fontWeight: 600 }}>
           User Management
         </Typography>
         <Button
-          variant="outlined"
+          variant="contained"
           onClick={fetchUsers}
           disabled={loading}
+          sx={{
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            borderRadius: 2,
+            px: 3,
+            py: 1,
+            textTransform: 'none',
+            boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+            '&:hover': {
+              background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
+              boxShadow: '0 6px 20px rgba(102, 126, 234, 0.6)',
+              transform: 'translateY(-1px)'
+            },
+            '&:disabled': {
+              background: 'rgba(0, 0, 0, 0.12)',
+              transform: 'none',
+              boxShadow: 'none'
+            },
+            transition: 'all 0.2s ease-in-out'
+          }}
         >
           Refresh
         </Button>
       </Box>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert
+          severity="error"
+          sx={{
+            mb: 3,
+            mx: 2,
+            borderRadius: 3,
+            border: '1px solid rgba(244, 67, 54, 0.2)',
+            boxShadow: '0 4px 20px rgba(244, 67, 54, 0.1)'
+          }}
+        >
           {error}
         </Alert>
       )}
 
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Username</TableCell>
-              <TableCell>Role</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Created</TableCell>
-              <TableCell align="center">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {users.length === 0 ? (
+      {/* Users Table */}
+      <Box sx={{ px: 2 }}>
+        <TableContainer
+          component={Paper}
+          sx={{
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.2)'
+          }}
+        >
+          <Table>
+            <TableHead>
               <TableRow>
-                <TableCell colSpan={5} align="center">
-                  <Typography variant="body2" color="text.secondary">
-                    No users found
-                  </Typography>
-                </TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Username</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Role</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 600 }}>Actions</TableCell>
               </TableRow>
-            ) : (
-              users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      {user.role === 'admin' ? <AdminIcon fontSize="small" /> : <PersonIcon fontSize="small" />}
-                      {user.username}
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Chip 
-                      label={user.role}
-                      size="small"
-                      sx={{
-                        background: user.role === 'admin' 
-                          ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                          : 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-                        color: 'white',
-                        fontWeight: 500,
-                        border: 'none'
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Chip 
-                      label={user.is_active ? 'Active' : 'Inactive'}
-                      size="small"
-                      sx={{
-                        background: user.is_active 
-                          ? 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
-                          : 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                        color: 'white',
-                        fontWeight: 500,
-                        border: 'none'
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    {formatDate(user.created_at)}
-                  </TableCell>
-                  <TableCell align="center">
-                    {user.role !== 'admin' && (
-                      <Tooltip title="Delete user and all associated data">
-                        <IconButton
-                          onClick={() => handleDeleteClick(user)}
-                          size="small"
-                          sx={{
-                            background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                            color: 'white',
-                            borderRadius: 2,
-                            p: 1,
-                            '&:hover': {
-                              background: 'linear-gradient(135deg, #e078f0 0%, #e73c5e 100%)',
-                              transform: 'translateY(-1px) scale(1.05)'
-                            },
-                            transition: 'all 0.2s ease-in-out'
-                          }}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </Tooltip>
-                    )}
+            </TableHead>
+            <TableBody>
+              {users.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      No users found
+                    </Typography>
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+              ) : (
+                users.map((user) => (
+                  <TableRow key={user.id} hover>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {user.role === 'admin' ? <AdminIcon fontSize="small" /> : <PersonIcon fontSize="small" />}
+                        {user.username}
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={user.role}
+                        size="small"
+                        sx={{
+                          background: user.role === 'admin'
+                            ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                            : 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                          color: 'white',
+                          fontWeight: 500,
+                          border: 'none'
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={user.is_active ? 'Active' : 'Inactive'}
+                        size="small"
+                        sx={{
+                          background: user.is_active
+                            ? 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+                            : 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                          color: 'white',
+                          fontWeight: 500,
+                          border: 'none'
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      {formatDate(user.created_at)}
+                    </TableCell>
+                    <TableCell align="center">
+                      {user.role !== 'admin' && (
+                        <Tooltip title="Delete user and all associated data">
+                          <IconButton
+                            onClick={() => handleDeleteClick(user)}
+                            size="small"
+                            sx={{
+                              color: '#f5576c',
+                              border: '1px solid rgba(245, 87, 108, 0.3)',
+                              borderRadius: 2,
+                              p: 1,
+                              '&:hover': {
+                                background: 'rgba(245, 87, 108, 0.08)',
+                                border: '1px solid rgba(245, 87, 108, 0.5)',
+                                transform: 'translateY(-1px) scale(1.05)'
+                              },
+                              transition: 'all 0.2s ease-in-out'
+                            }}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
-      <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-        Total users: {users.length}
-      </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 2, px: 1 }}>
+          Total users: {users.length}
+        </Typography>
+      </Box>
 
       {/* Delete Confirmation Dialog */}
       <Dialog
@@ -218,8 +258,18 @@ const UserManagement = () => {
         onClose={handleDeleteCancel}
         maxWidth="sm"
         fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+            border: '1px solid rgba(102, 126, 234, 0.1)'
+          }
+        }}
       >
-        <DialogTitle>
+        <DialogTitle sx={{
+          borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+          fontWeight: 600
+        }}>
           Delete User
         </DialogTitle>
         <DialogContent>
@@ -238,9 +288,9 @@ const UserManagement = () => {
             This action cannot be undone.
           </Typography>
         </DialogContent>
-        <DialogActions sx={{ p: 3, gap: 2 }}>
-          <Button 
-            onClick={handleDeleteCancel} 
+        <DialogActions sx={{ p: 3, borderTop: '1px solid rgba(0, 0, 0, 0.08)', gap: 2 }}>
+          <Button
+            onClick={handleDeleteCancel}
             disabled={deleting}
             sx={{
               borderRadius: 2,
@@ -262,7 +312,7 @@ const UserManagement = () => {
           >
             Cancel
           </Button>
-          <Button 
+          <Button
             onClick={handleDeleteConfirm}
             variant="contained"
             disabled={deleting}

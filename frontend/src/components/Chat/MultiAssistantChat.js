@@ -90,49 +90,97 @@ const MultiAssistantChat = () => {
   const currentAssistant = assistants.find(a => a.id === currentAssistantId);
 
   return (
-    <Box sx={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
+    <Box sx={{
+      display: 'flex',
+      flexDirection: 'column',
       height: { xs: 'calc(100vh - 56px)', sm: '100%' },
       p: { xs: 1, sm: 2 },
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      minHeight: '100vh'
+      minHeight: '100vh',
+      background: '#000000'
     }}>
       {/* Assistant Selector */}
       <AssistantSelector />
 
       {error && (
-        <Alert 
-          severity="error" 
+        <Alert
+          severity="error"
           onClose={() => dispatch(clearError())}
-          sx={{ mb: 2 }}
+          sx={{
+            mb: 2,
+            fontFamily: '"JetBrains Mono", monospace',
+            fontSize: '0.75rem',
+            background: 'rgba(239, 68, 68, 0.1)',
+            color: '#fca5a5',
+            border: '1px solid rgba(239, 68, 68, 0.2)',
+            '& .MuiAlert-icon': {
+              color: '#ef4444',
+            }
+          }}
         >
           {error}
         </Alert>
       )}
 
       {/* Chat Messages */}
-      <Paper 
-        elevation={8}
-        sx={{ 
-          flex: 1, 
-          p: { xs: 1, sm: 2 }, 
-          mb: 2, 
-          maxHeight: { xs: '50vh', sm: '60vh' }, 
+      <Paper
+        sx={{
+          flex: 1,
+          p: { xs: 1, sm: 2 },
+          mb: 2,
+          maxHeight: { xs: '50vh', sm: '60vh' },
           overflow: 'auto',
-          background: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(10px)',
+          background: 'rgba(17, 24, 39, 0.4)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(74, 222, 128, 0.1)',
           borderRadius: 3,
-          border: '1px solid rgba(255, 255, 255, 0.2)'
+          boxShadow: '0 0 40px rgba(74, 222, 128, 0.05)',
+          '&::-webkit-scrollbar': {
+            width: '8px',
+          },
+          '&::-webkit-scrollbar-track': {
+            background: 'rgba(0, 0, 0, 0.2)',
+            borderRadius: 4,
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: 'rgba(74, 222, 128, 0.3)',
+            borderRadius: 4,
+            '&:hover': {
+              background: 'rgba(74, 222, 128, 0.5)',
+            }
+          }
         }}
       >
         {currentHistory.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 4 }}>
-            <Typography variant="h6" color="text.secondary">
+            <Typography
+              variant="h6"
+              sx={{
+                fontFamily: '"JetBrains Mono", monospace',
+                color: 'rgba(156, 163, 175, 0.7)',
+                fontSize: '1rem',
+                '&::before': {
+                  content: '"> "',
+                  color: '#4ade80',
+                }
+              }}
+            >
               {currentAssistant ? `Start a conversation with ${currentAssistant.name}` : 'Select an assistant to start chatting'}
             </Typography>
             {currentAssistant?.description && (
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  mt: 2,
+                  fontFamily: '"JetBrains Mono", monospace',
+                  color: 'rgba(156, 163, 175, 0.5)',
+                  fontSize: '0.8rem',
+                  '&::before': {
+                    content: '"// "',
+                    color: '#60a5fa',
+                    opacity: 0.6,
+                  }
+                }}
+              >
                 {currentAssistant.description}
               </Typography>
             )}
@@ -143,13 +191,14 @@ const MultiAssistantChat = () => {
               <Box key={query.id} sx={{ mb: 3 }}>
                 {/* User Message */}
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
-                  <Box sx={{ 
-                    maxWidth: { xs: '85%', sm: '70%' }, 
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    color: 'white',
-                    p: { xs: 1.5, sm: 2 }, 
-                    borderRadius: '20px 20px 6px 20px',
-                    boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+                  <Box sx={{
+                    maxWidth: { xs: '85%', sm: '70%' },
+                    background: 'linear-gradient(135deg, rgba(74, 222, 128, 0.15) 0%, rgba(74, 222, 128, 0.1) 100%)',
+                    border: '1px solid rgba(74, 222, 128, 0.3)',
+                    color: '#ffffff',
+                    p: { xs: 1.5, sm: 2 },
+                    borderRadius: '16px 16px 4px 16px',
+                    boxShadow: '0 0 20px rgba(74, 222, 128, 0.1)',
                     position: 'relative',
                     animation: 'slideInRight 0.3s ease-out',
                     '@keyframes slideInRight': {
@@ -164,24 +213,42 @@ const MultiAssistantChat = () => {
                     }
                   }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                      <PersonIcon sx={{ mr: 1, fontSize: 16 }} />
-                      <Typography variant="caption">
+                      <PersonIcon sx={{ mr: 1, fontSize: 16, color: '#4ade80' }} />
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontFamily: '"JetBrains Mono", monospace',
+                          fontSize: '0.7rem',
+                          color: 'rgba(156, 163, 175, 0.8)'
+                        }}
+                      >
                         {query.username || 'Unknown User'} • {formatTimestamp(query.timestamp)}
                       </Typography>
                     </Box>
-                    <Typography variant="body1">{query.question}</Typography>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        fontFamily: '"JetBrains Mono", monospace',
+                        fontSize: '0.9rem',
+                        color: '#ffffff',
+                        lineHeight: 1.6
+                      }}
+                    >
+                      {query.question}
+                    </Typography>
                   </Box>
                 </Box>
 
                 {/* Assistant Response */}
                 <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
-                  <Box sx={{ 
-                    maxWidth: { xs: '85%', sm: '70%' }, 
-                    background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-                    p: { xs: 1.5, sm: 2 }, 
-                    borderRadius: '20px 20px 20px 6px',
-                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-                    border: '1px solid rgba(102, 126, 234, 0.1)',
+                  <Box sx={{
+                    maxWidth: { xs: '85%', sm: '70%' },
+                    background: 'rgba(17, 24, 39, 0.6)',
+                    backdropFilter: 'blur(10px)',
+                    p: { xs: 1.5, sm: 2 },
+                    borderRadius: '16px 16px 16px 4px',
+                    boxShadow: '0 0 20px rgba(96, 165, 250, 0.1)',
+                    border: '1px solid rgba(96, 165, 250, 0.3)',
                     position: 'relative',
                     animation: 'slideInLeft 0.3s ease-out',
                     '@keyframes slideInLeft': {
@@ -196,37 +263,114 @@ const MultiAssistantChat = () => {
                     }
                   }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                      <BotIcon sx={{ mr: 1, fontSize: 16, color: '#1976d2' }} />
-                      <Typography variant="caption">
+                      <BotIcon sx={{ mr: 1, fontSize: 16, color: '#60a5fa' }} />
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontFamily: '"JetBrains Mono", monospace',
+                          fontSize: '0.7rem',
+                          color: 'rgba(96, 165, 250, 0.9)'
+                        }}
+                      >
                         {currentAssistant?.name || 'Assistant'}
                       </Typography>
                     </Box>
-                    <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        whiteSpace: 'pre-wrap',
+                        fontFamily: '"JetBrains Mono", monospace',
+                        fontSize: '0.9rem',
+                        color: '#ffffff',
+                        lineHeight: 1.6
+                      }}
+                    >
                       {query.answer}
                     </Typography>
 
                     {/* Sources */}
                     {query.sources && query.sources.length > 0 && (
-                      <Accordion sx={{ mt: 2, boxShadow: 'none' }}>
-                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                          <Typography variant="caption">
+                      <Accordion
+                        sx={{
+                          mt: 2,
+                          boxShadow: 'none',
+                          background: 'rgba(0, 0, 0, 0.3)',
+                          border: '1px solid rgba(96, 165, 250, 0.2)',
+                          borderRadius: 2,
+                          '&:before': {
+                            display: 'none'
+                          }
+                        }}
+                      >
+                        <AccordionSummary
+                          expandIcon={<ExpandMoreIcon sx={{ color: '#60a5fa' }} />}
+                          sx={{
+                            '& .MuiAccordionSummary-content': {
+                              margin: '8px 0'
+                            }
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              fontFamily: '"JetBrains Mono", monospace',
+                              fontSize: '0.75rem',
+                              color: '#60a5fa',
+                              '&::before': {
+                                content: '"// "',
+                                opacity: 0.6
+                              }
+                            }}
+                          >
                             Sources ({query.sources.length})
                           </Typography>
                         </AccordionSummary>
-                        <AccordionDetails>
+                        <AccordionDetails sx={{ pt: 0 }}>
                           <Box>
                             {query.sources.map((source, idx) => (
                               <Box key={idx} sx={{ mb: 2 }}>
-                                <Typography variant="body2" fontWeight="bold">
+                                <Typography
+                                  variant="body2"
+                                  sx={{
+                                    fontFamily: '"JetBrains Mono", monospace',
+                                    fontSize: '0.8rem',
+                                    fontWeight: 600,
+                                    color: '#4ade80',
+                                    '&::before': {
+                                      content: '"> "',
+                                      color: '#4ade80'
+                                    }
+                                  }}
+                                >
                                   Source {idx + 1}
                                 </Typography>
-                                <Typography variant="caption" color="text.secondary">
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    fontFamily: '"JetBrains Mono", monospace',
+                                    fontSize: '0.7rem',
+                                    color: 'rgba(156, 163, 175, 0.7)',
+                                    display: 'block',
+                                    mt: 0.5
+                                  }}
+                                >
                                   {source.source} • Similarity: {(source.similarity_score * 100).toFixed(1)}%
                                 </Typography>
-                                <Typography variant="body2" sx={{ mt: 1 }}>
+                                <Typography
+                                  variant="body2"
+                                  sx={{
+                                    mt: 1,
+                                    fontFamily: '"JetBrains Mono", monospace',
+                                    fontSize: '0.75rem',
+                                    color: 'rgba(255, 255, 255, 0.8)',
+                                    lineHeight: 1.5
+                                  }}
+                                >
                                   {source.content_preview}
                                 </Typography>
-                                {idx < query.sources.length - 1 && <Divider sx={{ mt: 1 }} />}
+                                {idx < query.sources.length - 1 && (
+                                  <Divider sx={{ mt: 1, borderColor: 'rgba(96, 165, 250, 0.1)' }} />
+                                )}
                               </Box>
                             ))}
                           </Box>
@@ -243,28 +387,45 @@ const MultiAssistantChat = () => {
         {/* Loading indicator */}
         {isQuerying && (
           <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2 }}>
-            <Box sx={{ 
-              maxWidth: { xs: '85%', sm: '70%' }, 
-              background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-              p: { xs: 1.5, sm: 2 }, 
-              borderRadius: '20px 20px 20px 6px',
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-              border: '1px solid rgba(102, 126, 234, 0.1)',
+            <Box sx={{
+              maxWidth: { xs: '85%', sm: '70%' },
+              background: 'rgba(17, 24, 39, 0.6)',
+              backdropFilter: 'blur(10px)',
+              p: { xs: 1.5, sm: 2 },
+              borderRadius: '16px 16px 16px 4px',
+              boxShadow: '0 0 20px rgba(96, 165, 250, 0.1)',
+              border: '1px solid rgba(96, 165, 250, 0.3)',
               display: 'flex',
               alignItems: 'center',
               animation: 'pulse 1.5s ease-in-out infinite',
               '@keyframes pulse': {
                 '0%, 100%': {
-                  opacity: 0.8
+                  opacity: 0.6
                 },
                 '50%': {
                   opacity: 1
                 }
               }
             }}>
-              <CircularProgress size={16} sx={{ mr: 1 }} />
-              <Typography variant="body2" color="text.secondary">
-                {currentAssistant?.name || 'Assistant'} is thinking...
+              <CircularProgress size={16} sx={{ mr: 1, color: '#60a5fa' }} />
+              <Typography
+                variant="body2"
+                sx={{
+                  fontFamily: '"JetBrains Mono", monospace',
+                  fontSize: '0.85rem',
+                  color: 'rgba(96, 165, 250, 0.9)',
+                  '&::after': {
+                    content: '"..."',
+                    animation: 'dots 1.5s steps(4, end) infinite'
+                  },
+                  '@keyframes dots': {
+                    '0%, 20%': { content: '"."' },
+                    '40%': { content: '".."' },
+                    '60%, 100%': { content: '"..."' }
+                  }
+                }}
+              >
+                {currentAssistant?.name || 'Assistant'} is thinking
               </Typography>
             </Box>
           </Box>
@@ -275,17 +436,17 @@ const MultiAssistantChat = () => {
 
       {/* Message Input */}
       <Paper
-        elevation={8}
         sx={{
           p: { xs: 1, sm: 1.5 },
-          background: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(10px)',
+          background: 'rgba(17, 24, 39, 0.6)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(74, 222, 128, 0.1)',
           borderRadius: 3,
-          border: '1px solid rgba(255, 255, 255, 0.2)'
+          boxShadow: '0 0 20px rgba(74, 222, 128, 0.05)'
         }}
       >
-        <Box sx={{ 
-          display: 'flex', 
+        <Box sx={{
+          display: 'flex',
           gap: { xs: 0.5, sm: 1 },
           flexDirection: { xs: 'row' }
         }}>
@@ -301,16 +462,32 @@ const MultiAssistantChat = () => {
           variant="outlined"
           sx={{
             '& .MuiOutlinedInput-root': {
-              fontSize: { xs: '0.875rem', sm: '1rem' },
+              fontFamily: '"JetBrains Mono", monospace',
+              fontSize: { xs: '0.85rem', sm: '0.9rem' },
               borderRadius: 2,
-              background: 'rgba(255, 255, 255, 0.8)',
-              '&:hover': {
-                background: 'rgba(255, 255, 255, 0.9)'
+              background: 'rgba(0, 0, 0, 0.3)',
+              color: '#ffffff',
+              '& fieldset': {
+                borderColor: 'rgba(74, 222, 128, 0.2)',
+                transition: 'all 0.2s ease',
               },
-              '&.Mui-focused': {
-                background: 'rgba(255, 255, 255, 1)',
-                boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)'
+              '&:hover fieldset': {
+                borderColor: 'rgba(74, 222, 128, 0.4)',
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: '#4ade80',
+                borderWidth: 1,
+              },
+              '&.Mui-disabled': {
+                background: 'rgba(0, 0, 0, 0.2)',
+                '& fieldset': {
+                  borderColor: 'rgba(156, 163, 175, 0.1)'
+                }
               }
+            },
+            '& .MuiInputBase-input::placeholder': {
+              color: 'rgba(156, 163, 175, 0.5)',
+              opacity: 1
             }
           }}
         />
@@ -318,24 +495,30 @@ const MultiAssistantChat = () => {
             variant="contained"
             onClick={handleSendMessage}
             disabled={!message.trim() || !currentAssistantId || isQuerying}
-            sx={{ 
+            sx={{
               minWidth: { xs: 48, sm: 56 },
               px: { xs: 1, sm: 2 },
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'linear-gradient(135deg, rgba(74, 222, 128, 0.15) 0%, rgba(96, 165, 250, 0.15) 100%)',
+              border: '1px solid rgba(74, 222, 128, 0.3)',
+              color: '#4ade80',
+              fontFamily: '"JetBrains Mono", monospace',
               borderRadius: 2,
-              boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+              boxShadow: '0 0 15px rgba(74, 222, 128, 0.1)',
+              transition: 'all 0.2s ease',
               '&:hover': {
-                background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
-                boxShadow: '0 6px 20px rgba(102, 126, 234, 0.6)',
+                background: 'linear-gradient(135deg, rgba(74, 222, 128, 0.25) 0%, rgba(96, 165, 250, 0.25) 100%)',
+                borderColor: 'rgba(74, 222, 128, 0.5)',
+                boxShadow: '0 0 25px rgba(74, 222, 128, 0.2)',
                 transform: 'translateY(-1px)'
               },
               '&:disabled': {
-                background: 'rgba(0, 0, 0, 0.12)'
-              },
-              transition: 'all 0.2s ease-in-out'
+                background: 'rgba(17, 24, 39, 0.5)',
+                border: '1px solid rgba(156, 163, 175, 0.1)',
+                color: 'rgba(156, 163, 175, 0.3)'
+              }
             }}
           >
-          {isQuerying ? <CircularProgress size={24} /> : <SendIcon />}
+          {isQuerying ? <CircularProgress size={24} sx={{ color: '#4ade80' }} /> : <SendIcon />}
           </Button>
         </Box>
       </Paper>

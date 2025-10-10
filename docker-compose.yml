@@ -1,36 +1,19 @@
 version: '3.8'
 
 services:
-  # PostgreSQL Database
+  # PostgreSQL Database with pgvector
   postgres:
-    image: postgres:15-alpine
+    image: pgvector/pgvector:pg15
     container_name: postgres
     environment:
       POSTGRES_DB: ragdb
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: password
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-db:/docker-entrypoint-initdb.d
-    networks:
-      - rag-network
-
-  # ChromaDB Vector Database
-  chromadb:
-    image: chromadb/chroma:latest
-    container_name: chromadb
-    ports:
-      - "8001:8000"
-    volumes:
-      - chroma_data:/data
-    environment:
-      - IS_PERSISTENT=TRUE
-      - PERSIST_DIRECTORY=/data
-      - ANONYMIZED_TELEMETRY=FALSE
-      - CHROMA_SERVER_HOST=0.0.0.0
-      - CHROMA_SERVER_HTTP_PORT=8000
     networks:
       - rag-network
 
@@ -46,7 +29,6 @@ services:
       - PORT=8080
     depends_on:
       - postgres
-      - chromadb
     volumes:
       - ./app:/app/app:ro  # Mount source for development
     networks:
@@ -60,7 +42,7 @@ services:
       - "3000:3000"
     environment:
       - REACT_APP_API_BASE_URL=http://localhost:8080
-      - REACT_APP_NAME=DOCUMIND
+      - REACT_APP_NAME=Persona
       - REACT_APP_DEBUG=true
     depends_on:
       - backend
@@ -70,8 +52,6 @@ services:
 volumes:
   postgres_data:
     name: rag_postgres_data
-  chroma_data:
-    name: rag_chroma_data
 
 networks:
   rag-network:

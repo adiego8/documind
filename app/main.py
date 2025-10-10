@@ -6,9 +6,10 @@ from app.database import test_connection
 from app.document_processor import DocumentProcessor
 from app.vector_store import VectorStore
 from app.rag_service import RAGService
+from app.middleware import APIKeyAuthMiddleware
 
 # Import all routers
-from app.routers import auth, assistants, documents, queries, admin, llm_config, legacy
+from app.routers import auth, assistants, documents, queries, admin, llm_config, legacy, cms, api_keys, projects, public_api
 
 app = FastAPI(
     title=f"{settings.app_name} API",
@@ -24,6 +25,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add API Key authentication middleware
+app.add_middleware(APIKeyAuthMiddleware)
 
 # Initialize services with error handling
 document_processor = DocumentProcessor()
@@ -62,7 +66,7 @@ async def health_check():
     
     return {
         "status": "healthy",
-        "service": "DOCUMIND API", 
+        "service": "Persona API", 
         "database": db_status,
         "timestamp": datetime.now().isoformat()
     }
@@ -79,6 +83,10 @@ app.include_router(queries.router)
 app.include_router(admin.router)
 app.include_router(llm_config.router)
 app.include_router(legacy.router)
+app.include_router(cms.router)
+app.include_router(api_keys.router)
+app.include_router(projects.router)
+app.include_router(public_api.router)
 
 if __name__ == "__main__":
     import uvicorn

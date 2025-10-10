@@ -106,18 +106,50 @@ async def query_documents_json(request: QueryRequest):
 @router.get("/stats")
 async def get_stats():
     """Legacy stats endpoint"""
-    vector_store = check_vector_store()
-    return {
-        "document_count": vector_store.get_collection_count(),
-        "collection_name": vector_store.collection_name
-    }
+    # Get total stats across all assistants
+    from app.database import get_db_connection
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("""
+            SELECT 
+                COUNT(DISTINCT document_id) as total_documents,
+                COUNT(*) as total_chunks,
+                COUNT(DISTINCT assistant_id) as total_assistants
+            FROM document_embeddings
+        """)
+        
+        result = cursor.fetchone()
+        return {
+            "document_count": result[0] if result else 0,
+            "total_chunks": result[1] if result else 0,
+            "total_assistants": result[2] if result else 0,
+            "collection_name": "assistant_documents"  # Legacy compatibility
+        }
+    finally:
+        cursor.close()
+        conn.close()
 
 @router.delete("/documents")
 async def clear_documents(current_user: dict = Depends(get_current_admin_user)):
     """Legacy clear documents endpoint"""
-    vector_store = check_vector_store()
-    vector_store.delete_collection()
-    return {"message": "All documents cleared from the database"}
+    # Clear all documents from all assistants
+    from app.database import get_db_connection
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("DELETE FROM document_embeddings")
+        deleted_count = cursor.rowcount
+        conn.commit()
+        return {
+            "message": f"All documents cleared from the database",
+            "deleted_chunks": deleted_count
+        }
+    finally:
+        cursor.close()
+        conn.close()
 
 @router.get("/assistant/config")
 async def get_legacy_assistant_config(current_user: dict = Depends(get_current_user)):

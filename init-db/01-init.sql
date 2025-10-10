@@ -9,7 +9,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     username VARCHAR(255) UNIQUE NOT NULL,
     hashed_password VARCHAR(255) NOT NULL,
     role VARCHAR(50) DEFAULT 'user' CHECK (role IN ('user', 'admin')),
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Create assistant_config table
 CREATE TABLE IF NOT EXISTS assistant_config (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) DEFAULT 'Assistant',
     initial_context TEXT DEFAULT 'You are a helpful AI assistant.',
     temperature FLOAT DEFAULT 0.7 CHECK (temperature >= 0 AND temperature <= 2),
@@ -29,8 +29,8 @@ CREATE TABLE IF NOT EXISTS assistant_config (
 
 -- Create chat_sessions table
 CREATE TABLE IF NOT EXISTS chat_sessions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    session_id UUID DEFAULT uuid_generate_v4() UNIQUE NOT NULL,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_id UUID DEFAULT gen_random_uuid() UNIQUE NOT NULL,
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     title VARCHAR(255) DEFAULT 'New Chat',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS chat_sessions (
 
 -- Create chat_messages table
 CREATE TABLE IF NOT EXISTS chat_messages (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID REFERENCES chat_sessions(session_id) ON DELETE CASCADE,
     content TEXT NOT NULL,
     sender VARCHAR(20) NOT NULL CHECK (sender IN ('user', 'assistant')),

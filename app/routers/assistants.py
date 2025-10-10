@@ -113,10 +113,14 @@ async def delete_assistant(
         collection_deleted = False
         try:
             # Create RAG service for this assistant
-            rag_service = RAGService.create_for_assistant(assistant_id, assistant.get('document_collection'), assistant)
+            rag_service = RAGService.create_for_assistant(
+                assistant_id,
+                project_id=assistant.get('project_id'),
+                assistant_config=assistant
+            )
             
             # Delete the entire collection for this assistant
-            rag_service.delete_collection()
+            rag_service.clear_all_documents()
             collection_deleted = True
             print(f"Successfully deleted entire collection for assistant {assistant_id}")
                 

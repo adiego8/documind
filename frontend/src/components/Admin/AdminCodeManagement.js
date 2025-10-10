@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -18,9 +18,9 @@ import {
   Visibility as ViewIcon,
 } from '@mui/icons-material';
 import { useSelector, useDispatch } from 'react-redux';
-import { 
-  getAdminCodes, 
-  clearError 
+import {
+  getAdminCodes,
+  clearError
 } from '../../store/slices/adminSlice';
 
 const AdminCodeManagement = () => {
@@ -53,8 +53,8 @@ const AdminCodeManagement = () => {
       </Box>
 
       {error && (
-        <Alert 
-          severity="error" 
+        <Alert
+          severity="error"
           onClose={() => dispatch(clearError())}
           sx={{ mb: 3 }}
         >
@@ -62,12 +62,12 @@ const AdminCodeManagement = () => {
         </Alert>
       )}
 
-      <TableContainer 
+      <TableContainer
         component={Paper}
         elevation={8}
         sx={{
           borderRadius: 3,
-          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+          // background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
           border: '1px solid rgba(102, 126, 234, 0.1)',
           overflow: 'hidden'
         }}
@@ -93,8 +93,8 @@ const AdminCodeManagement = () => {
                     <Typography variant="body2" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>
                       {code.code}
                     </Typography>
-                    <IconButton 
-                      size="small" 
+                    <IconButton
+                      size="small"
                       onClick={() => handleCopyCode(code.code)}
                       title="Copy admin code"
                       sx={{
@@ -115,10 +115,10 @@ const AdminCodeManagement = () => {
                 </TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ 
-                        fontFamily: 'monospace', 
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontFamily: 'monospace',
                         fontWeight: 'bold',
                         color: 'primary.main'
                       }}
@@ -126,8 +126,8 @@ const AdminCodeManagement = () => {
                       {code.user_code || 'N/A'}
                     </Typography>
                     {code.user_code && (
-                      <IconButton 
-                        size="small" 
+                      <IconButton
+                        size="small"
                         onClick={() => handleCopyCode(code.user_code)}
                         title="Copy user code"
                         sx={{
@@ -168,11 +168,11 @@ const AdminCodeManagement = () => {
                   </Typography>
                 </TableCell>
                 <TableCell>
-                  <Chip 
-                    label={code.is_active ? 'Active' : 'Inactive'} 
+                  <Chip
+                    label={code.is_active ? 'Active' : 'Inactive'}
                     size="small"
                     sx={{
-                      background: code.is_active 
+                      background: code.is_active
                         ? 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
                         : 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
                       color: 'white',
@@ -183,8 +183,8 @@ const AdminCodeManagement = () => {
                 </TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', gap: 1 }}>
-                    <IconButton 
-                      size="small" 
+                    <IconButton
+                      size="small"
                       title="View users"
                       sx={{
                         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',

@@ -1,48 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.png" type="image/png" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#1976d2" />
-    <meta
-      name="description"
-      content="DOCUMIND - AI-powered document assistant platform for intelligent document analysis and conversation"
-    />
-    <meta name="keywords" content="AI, document analysis, chatbot, assistant, RAG, knowledge base" />
-    <meta name="author" content="DOCUMIND" />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Content Security Policy -->
-    <meta http-equiv="Content-Security-Policy" content="
+
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" href="%PUBLIC_URL%/favicon.png" type="image/png" />
+  <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#1976d2" />
+  <meta name="description"
+    content="PERSONA - AI-powered document assistant platform for intelligent document analysis and conversation" />
+  <meta name="keywords" content="AI, document analysis, chatbot, assistant, RAG, knowledge base" />
+  <meta name="author" content="PERSONA" />
+  <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+  <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800&family=Fira+Code:wght@300;400;500;600;700&family=Source+Code+Pro:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Orbitron:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <!-- Content Security Policy -->
+  <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
       script-src 'self' 'unsafe-inline' 'unsafe-eval';
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       font-src 'self' https://fonts.gstatic.com;
       img-src 'self' data: blob:;
-      connect-src 'self' http://localhost:8080 https://documind-backend-prod-391389301939.us-east1.run.app;
-      object-src 'none';
+      connect-src 'self' http://localhost:8080 http://localhost:8082 https://persona.numerico.co;
+earch)     object-src 'none';
       base-uri 'self';
       frame-ancestors 'none';
     ">
-    
-    <!-- Additional Security Headers -->
-    <meta http-equiv="X-Frame-Options" content="DENY">
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
-    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
-    
-    <title>DOCUMIND - AI Document Assistant Platform</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-    <!--
+
+  <!-- Additional Security Headers -->
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+
+  <title>Persona - Backend as a Service</title>
+</head>
+
+<body>
+  <noscript>You need to enable JavaScript to run this app.</noscript>
+  <div id="root"></div>
+  <!--
       This HTML file is a template.
       If you open it directly in the browser, you will see an empty page.
 
@@ -52,5 +54,6 @@
       To begin the development, run `npm start` or `yarn start`.
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
-  </body>
+</body>
+
 </html>

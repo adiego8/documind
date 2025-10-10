@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import apiClient from '../../utils/axiosConfig';
 import config from '../../config/config';
 import { tokenUtils } from '../../utils/tokenUtils';
 
@@ -24,7 +24,7 @@ export const login = createAsyncThunk(
   'auth/login',
   async ({ username, password }, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
+      const response = await apiClient.post(`${API_BASE_URL}/auth/login`, {
         username,
         password,
       });
@@ -52,7 +52,7 @@ export const register = createAsyncThunk(
         url += `?user_code=${userCode}`;
       }
       
-      const response = await axios.post(url, {
+      const response = await apiClient.post(url, {
         username,
         password,
         role,
@@ -68,7 +68,7 @@ export const validateUserCode = createAsyncThunk(
   'auth/validateUserCode',
   async (code, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/user-codes/${code}/validate`);
+      const response = await apiClient.get(`${API_BASE_URL}/user-codes/${code}/validate`);
       return response.data;
     } catch (error) {
       return rejectWithValue(formatError(error) || 'User code validation failed');
@@ -81,7 +81,7 @@ export const validateAdminCode = createAsyncThunk(
   'auth/validateAdminCode',
   async (code, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/admin/codes/${code}/validate`);
+      const response = await apiClient.get(`${API_BASE_URL}/admin/codes/${code}/validate`);
       return response.data;
     } catch (error) {
       return rejectWithValue(formatError(error) || 'Admin code validation failed');
@@ -114,13 +114,21 @@ const authSlice = createSlice({
       state.adminCodeValidation = null;
     },
     initializeAuth: (state) => {
-      const token = localStorage.getItem('token');
-      const role = localStorage.getItem('userRole');
+      const token = tokenUtils.getToken();
+      const role = tokenUtils.getRole();
       if (token) {
         state.token = token;
         state.role = role;
         state.isAuthenticated = true;
       }
+    },
+    forceLogout: (state) => {
+      tokenUtils.clearAuth();
+      state.user = null;
+      state.token = null;
+      state.role = null;
+      state.isAuthenticated = false;
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
@@ -193,5 +201,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearError, initializeAuth, clearAdminCodeValidation } = authSlice.actions;
+export const { clearError, initializeAuth, clearAdminCodeValidation, forceLogout } = authSlice.actions;
 export default authSlice.reducer;

@@ -5,7 +5,7 @@
 
 -- Create assistants table (replaces single assistant_config)
 CREATE TABLE IF NOT EXISTS assistants (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
     description TEXT,
     initial_context TEXT NOT NULL,
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS assistants (
 
 -- Create user_queries table (replaces chat_sessions + chat_messages)
 CREATE TABLE IF NOT EXISTS user_queries (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     assistant_id UUID REFERENCES assistants(id) ON DELETE CASCADE,
     question TEXT NOT NULL,
